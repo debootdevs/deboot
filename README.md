@@ -43,7 +43,7 @@ Different networking facilities are available at different stages of the boot pr
 
 To get around difficulties with the limited boot environment (and to avoid doing a weird port of the Swarm client), we tried making a **unified kernel image** which bundles together a minimal Linux kernel together with enough junk to fetch a chunk from the Swarm:
 
-- Modules/programs required for networking. This is much easier if you have an Ethernet port.
+- Modules/programs required for networking. This is much easier if you have an Ethernet port; you just need to add a line `"ip=:::::<interface-name>:dhcp"` to the kernel commandline (argument to `-c` in `efi-muki`). We didn't manage to get it working over WiFi yet.
 - Bee client: https://github.com/ethersphere/bee
 - `curl` (to make an HTTP API request from the local node).
 
