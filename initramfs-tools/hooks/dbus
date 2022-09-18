@@ -1,0 +1,18 @@
+#!/bin/sh
+PREREQ=""
+prereqs() {
+	echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+# dbus
+
+. /usr/share/initramfs-tools/hook-functions #provides copy_exec
+
+for f in $(ls /usr/bin/dbus*); do copy_exec $f $f; done

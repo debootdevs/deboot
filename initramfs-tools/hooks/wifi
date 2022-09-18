@@ -1,0 +1,2 @@
+. /usr/share/initramfs-tools/hook-functions #provides copy_exec
+manual_add_modules cfg80211 iwlwifi iwlmvm

@@ -1,0 +1,31 @@
+# List of modules that you want to include in your initramfs.
+# They will be loaded at boot time in the order below.
+#
+# Syntax:  module_name [args ...]
+#
+# You must run update-initramfs(8) to effect this change.
+#
+# Examples:
+#
+# raid1
+# sd_mod
+
+cfg80211
+iwlwifi
+iwlmvm
+cryptd
+ghash_clmulni_intel
+crypto_simd
+aesni_intel
+cmac
+crct10dif_pclmul
+crc32_pclmul
+af_alg
+algif_hash
+algif_skcipher
+algif_aead
+libdes
+des_generic
+libarc4
+mac80211
+pkcs8_key_parser
