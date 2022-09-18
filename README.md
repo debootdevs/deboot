@@ -43,16 +43,32 @@ Different networking facilities are available at different stages of the boot pr
 
 To get around difficulties with the limited boot environment (and to avoid doing a weird port of the Swarm client), we tried making a **unified kernel image** which bundles together a minimal Linux kernel together with enough junk to fetch a chunk from the Swarm:
 
-- Modules/programs required for networking
+- Modules/programs required for networking. This is much easier if you have an Ethernet port.
 - Bee client: https://github.com/ethersphere/bee
 - `curl` (to make an HTTP API request from the local node).
 
-To do this, use the `initramfs-tools` package to make an initramfs containing these components (see `./initramfs/`) and then pass it and the kernel as a parameter to the `efi-mkuki` tool.
-
-Build process:
+To do this, use the `initramfs-tools` package to make an initramfs containing these components (see `./initramfs-tools/`) and then pass it and the kernel as a parameter to the `efi-mkuki` tool. Here is an example build sequence for Ubuntu (see `./initramfs-tools/`):
 
 ```sh
-update-initramfs <stuff>
-sudo efi-mkuki <really long commandline>
+update-initramfs -c -k <kernel-version> 
+	# creates in /boot/initrd.img-<kernel-version>
+sudo efi-mkuki -c BOOT_IMAGE=/boot/vmlinuz\ 
+	root=/dev/mapper/vgubuntu-root ro quiet splash vt.handoff=7 \
+	break=modules  -o deboot.efi -s logo1024768.bmp \
+	-S linuxx64.efi.stub /boot/vmlinuz /boot/initrd.img-<kernel-version>
+# the file linuxx64.efi.stub comes from /usr/lib/systemd/boot/efi/ 
+# on our machine
+```
+
+This outputs a UEFI executable `deboot.efi`, which you need to copy into your system EFI partition. Your mainboard firmware should then be able to find it, so it appears in the boot menu in the BIOS settings.
+
+Once booted into the initramfs, you need to execute the following:
+
+```sh
+bee start --swap-enable=false --password=beanus
+curl localhost:1633/bzz/<id> -LO
+mount <efi-partition> esp
+cp <id> esp/EFI/BOOT/nextboot.efi
+exit
 ```
 
