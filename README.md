@@ -39,6 +39,16 @@ Different networking facilities are available at different stages of the boot pr
 |                  |                           |                 |                   |
 |                  |                           |                 |                   |
 
+## Exocompile approach
+
+To get around difficulties with the limited boot environment (and to avoid doing a weird port of the Swarm client), we tried making a **unified kernel image** which bundles together a minimal Linux kernel together with enough junk to fetch a chunk from the Swarm:
+
+- Modules/programs required for networking
+- Bee client: https://github.com/ethersphere/bee
+- `curl` (to make an HTTP API request from the local node).
+
+To do this, use the `initramfs-tools` package to make an initramfs containing these components (see `./initramfs/`) and then pass it and the kernel as a parameter to the `efi-mkuki` tool.
+
 Build process:
 
 ```sh
