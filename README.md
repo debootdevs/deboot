@@ -1,3 +1,6 @@
+🚨 ATTENTION 🚨
+This repo is under construction! If you want to get involved, join us on Telegram: https://t.me/+TnD8PDmVUIdjZWE1
+
 # DeBoot
 
 DeBoot is a project to research and implement approaches to bootloading OS images from a decentralized storage network such as Swarm or IPFS.
