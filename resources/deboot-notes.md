@@ -46,3 +46,11 @@ Only boot into EFI executables signed by some authority, usually the device manu
 Options for bootstrapping trust are Shim (Fedora) and PreLoader (Linux Foundation). It is also possible to add or remove signing keys.
 
 - http://www.rodsbooks.com/efi-bootloaders/secureboot.html
+
+## PXE
+
+Preboot execution environment for netboot. Load EFI executable from a DHCP-proxy and TFTP server on a LAN. Can be used to manage boot for a fleet of devices.
+
+- DNSMASQ (open source PXE/DHCP/TFTP/DNS boot server) https://thekelleys.org.uk/dnsmasq/doc.html
+- How to set up a PXE server (DNSMASQ) https://www.tecmint.com/install-pxe-network-boot-server-in-centos-7/amp/
+- Raspberry Pi + PXE https://xunnanxu.github.io/2020/11/28/PXE-Boot-Diskless-Raspberry-Pi-4-With-Ubuntu-Ubiquiti-and-Synology-1-DHCP-Setup/
