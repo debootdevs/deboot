@@ -1,16 +1,10 @@
 #/bin/bash
 
-mkrootbasedir=${BASH_SOURCE[0]%/*}
-mkrootbasedir=$(readlink -f $mkrootbasedir)
+mkrootbasedir=$(readlink -f ${BASH_SOURCE[0]})
+mkrootbasedir=${mkrootbasedir%/*}
 debootbasedir=$(readlink -f $mkrootbasedir/..)
-
-if [ $dracutbasedir ]; then
-    basedir=$dracutbasedir
-else
-    basedir=${BASH_SOURCE[0]%/*}
-    basedir=$(readlink -f $basedir/../dracut)
-fi
-echo Using dracut installation found in $basedir.
+dracutbasedir=$debootbasedir/dracut
+echo Using dracut installation found in $debootbasedir.
 
 # build directory
 export BUILDDIR=${BUILDDIR:-${mkrootbasedir}/build}
@@ -20,13 +14,12 @@ if [ -f $BUILDDIR/squashfs.img ]; then
     exit 1
 fi
 
-
-make_client_root() {
+build_root() {
     # Prepare rootfs
     ROOTFS_TMPDIR=$(mktemp -dt deboot.XXXXX)
     (
         export initdir=$ROOTFS_TMPDIR/overlay/source/
-        . "$basedir"/dracut-init.sh
+        . "$dracutbasedir"/dracut-init.sh
 
         (
             cd "$initdir" || exit
@@ -43,12 +36,11 @@ make_client_root() {
             fi
         done
 
-        inst_simple "${basedir}/modules.d/99base/dracut-lib.sh" "/lib/dracut-lib.sh"
-        inst_simple "${basedir}/modules.d/99base/dracut-dev-lib.sh" "/lib/dracut-dev-lib.sh"
-        inst_simple "${basedir}/modules.d/45url-lib/url-lib.sh" "/lib/url-lib.sh"
-        inst_simple "${basedir}/modules.d/40network/net-lib.sh" "/lib/net-lib.sh"
-        #inst_simple "${basedir}/modules.d/95nfs/nfs-lib.sh" "/lib/nfs-lib.sh"
-        inst_binary "${basedir}/dracut-util" "/usr/bin/dracut-util"
+        inst_simple "${dracutbasedir}/modules.d/99base/dracut-lib.sh" "/lib/dracut-lib.sh"
+        inst_simple "${dracutbasedir}/modules.d/99base/dracut-dev-lib.sh" "/lib/dracut-dev-lib.sh"
+        inst_simple "${dracutbasedir}/modules.d/45url-lib/url-lib.sh" "/lib/url-lib.sh"
+        inst_simple "${dracutbasedir}/modules.d/40network/net-lib.sh" "/lib/net-lib.sh"
+        inst_binary "${dracutbasedir}/dracut-util" "/usr/bin/dracut-util"
         ln -s dracut-util "${initdir}/usr/bin/dracut-getarg"
         ln -s dracut-util "${initdir}/usr/bin/dracut-getargs"
 
@@ -64,4 +56,21 @@ make_client_root() {
     rm -rf $ROOTFS_TMPDIR
 }
 
-make_client_root
+test_root() {
+    QEMU=${dracutbasedir}/test/run-qemu
+
+    ROOTFS_TMPDIR=$(mktemp -dt deboot.XXXXX)
+
+    ${dracutbasedir}/dracut.sh -l -q -m "dmsquash-live qemu" \
+	    -i $BUILDDIR/squashfs.img /squashfs.img \
+	    --no-hostonly --no-hostonly-cmdline \
+	    --force $ROOTFS_TMPDIR/initrd $KVERSION || return 1
+
+    ls -l $ROOTFS_TMPDIR
+
+    $QEMU -initrd $ROOTFS_TMPDIR/initrd -append "root=live:/squashfs.img console=ttyS0,115200n81"
+
+
+    rm -rf $ROOTFS_TMPDIR
+}
+
