@@ -1,4 +1,4 @@
 [submodule "dracut"]
 	path = dracut
-	url = inari:/var/repo/FinnFET/dracut.git
+	url = https://github.com/awmacpherson/dracut.git
 	branch = ethswarm
