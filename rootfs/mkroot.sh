@@ -4,18 +4,18 @@ mkrootbasedir=$(readlink -f ${BASH_SOURCE[0]})
 mkrootbasedir=${mkrootbasedir%/*}
 debootbasedir=$(readlink -f $mkrootbasedir/..)
 dracutbasedir=$debootbasedir/dracut
-echo Using dracut installation found in $debootbasedir.
+echo Using dracut installation found in $dracutbasedir.
 
 # build directory
 export BUILDDIR=${BUILDDIR:-${mkrootbasedir}/build}
 mkdir -p $BUILDDIR
-if [ -f $BUILDDIR/squashfs.img ]; then
-    echo rootfs already found!
-    exit 1
-fi
 
 build_root() {
     # Prepare rootfs
+    if [ -f $BUILDDIR/squashfs.img ]; then
+	echo rootfs already found!
+    	exit 1
+    fi
     ROOTFS_TMPDIR=$(mktemp -dt deboot.XXXXX)
     (
         export initdir=$ROOTFS_TMPDIR/overlay/source/
@@ -66,11 +66,7 @@ test_root() {
 	    --no-hostonly --no-hostonly-cmdline \
 	    --force $ROOTFS_TMPDIR/initrd $KVERSION || return 1
 
-    ls -l $ROOTFS_TMPDIR
-
     $QEMU -initrd $ROOTFS_TMPDIR/initrd -append "root=live:/squashfs.img console=ttyS0,115200n81"
-
-
     rm -rf $ROOTFS_TMPDIR
 }
 

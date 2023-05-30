@@ -1,0 +1,4 @@
+rootfs/build/*
+
+# vim
+*.swp
