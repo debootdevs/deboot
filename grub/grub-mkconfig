@@ -1,0 +1,25 @@
+#!/bin/sh
+
+gen_menuentry() {
+    local HASH=${1##*/}
+    local DESC=$(cat $1)
+    cat << EOF
+menuentry "$DESC" --class swarm --class deboot --id "$HASH" {
+    search.fs_label DEBOOT root
+    linux /boot/vmlinuz root=live:bzz://$HASH console=ttyS0
+    initrd /boot/swarm-initrd
+}
+
+EOF
+}
+
+for f in ./menuentries/*; do
+    gen_menuentry $f
+done
+
+cat << EOF
+menuentry "UEFI Firmware setup" {
+    fwsetup
+}
+EOF
+
