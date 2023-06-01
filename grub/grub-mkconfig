@@ -6,7 +6,7 @@ gen_menuentry() {
     cat << EOF
 menuentry "$DESC" --class swarm --class deboot --id "$HASH" {
     search.fs_label DEBOOT root
-    linux /boot/vmlinuz root=live:bzz://$HASH console=ttyS0
+    linux /boot/vmlinuz root=live:bzz://$HASH console=ttyS0 panic=1
     initrd /boot/swarm-initrd
 }
 
