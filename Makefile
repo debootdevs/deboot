@@ -1,29 +1,33 @@
 BUILDDIR = $(realpath ./grub/build)
 MOUNTDIR = $(BUILDDIR)/mnt
-GRUB_PREFIX = $(MOUNTDIR)/boot/grub2
+# Fedora grub prefix
+GRUB_PREFIX = $(MOUNTDIR)/EFI/fedora
+#GRUB_PREFIX = $(MOUNTDIR)/boot/grub2
 HOST_EFI = /boot/efi
+PKG_INSTALL = dnf -y install
 
 ifeq ($(shell findmnt $(MOUNTDIR)),)
-$(error No mountdir found, run 'sudo grub/mount-image.sh' first!)
+$(error No mount found at $(MOUNTDIR), run 'sudo grub/mount-image.sh' first!)
 endif
 
 dracutbasedir = $(realpath ./dracut)
-PLATFORM = x86_64-efi
-export GRUBFLAGS = --verbose --removable --force --target=$(PLATFORM)
 
-all: install-grub $(GRUB_PREFIX)/grub.cfg $(MOUNTDIR)/vmlinuz $(MOUNTDIR)/swarm-initrd
+all: install-grub $(GRUB_PREFIX)/grub.cfg $(MOUNTDIR)/boot/vmlinuz $(MOUNTDIR)/boot/swarm-initrd
 
-install-grub: 
+install-grub:
+	$(PKG_INSTALL) grub2-efi-x64 shim-x64 
 	cp -r $(HOST_EFI)/* $(MOUNTDIR)
 
-$(GRUB_PREFIX)/grub.cfg:
+$(GRUB_PREFIX)/grub.cfg: swarm.hash
 	mkdir -p $(GRUB_PREFIX)
 	grub/grub-mkconfig > $@
 
-$(MOUNTDIR)/vmlinuz:
+$(MOUNTDIR)/boot/vmlinuz:
+	mkdir -p $(MOUNTDIR)/boot
 	cp /lib/modules/$$KVERSION/vmlinuz $@
 
-$(MOUNTDIR)/swarm-initrd: install-bee
+$(MOUNTDIR)/boot/swarm-initrd: /usr/bin/bee
+	mkdir -p $(MOUNTDIR)/boot
 	$(dracutbasedir)/dracut.sh -l \
 		-a "bzz network-legacy" \
 		-o iscsi \
@@ -33,7 +37,7 @@ $(MOUNTDIR)/swarm-initrd: install-bee
 install-bee: /usr/bin/bee
 
 /usr/bin/bee: bee-1.16.1.x86_64.rpm
-	rpm -i bee-1.16.1.x86_64.rpm
+	-rpm -i bee-1.16.1.x86_64.rpm
 
 bee-1.16.1.x86_64.rpm:
 	wget -nc https://github.com/ethersphere/bee/releases/download/v1.16.1/bee-1.16.1.x86_64.rpm

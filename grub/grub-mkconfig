@@ -13,7 +13,11 @@ menuentry "$DESC" --class swarm --class deboot --id "$HASH" {
 EOF
 }
 
-for f in ./menuentries/*; do
+HASHDIR=${HASHDIR-./swarm.hash}
+
+### BEGIN OUTPUT #############################################################
+
+for f in $HASHDIR/*; do
     gen_menuentry $f
 done
 

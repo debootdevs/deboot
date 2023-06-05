@@ -1,5 +1,8 @@
 #!/bin/sh
-BIOS=${BIOS:-/usr/share/qemu/ovmf-x86_64.bin}
+# Fedora
+BIOS=${BIOS-/usr/share/edk2/ovmf/OVMF_CODE.fd}
+# OpenSUSE
+#BIOS=${BIOS:-/usr/share/qemu/ovmf-x86_64.bin}
 GRUB=${GRUB:-./build/grub.img}
 if [ -z $GRUB ]; then
     echo "Please set GRUB=/path/to/grub.img."
