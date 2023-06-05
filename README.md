@@ -48,6 +48,8 @@ You'll need Linux, Podman, and preferably a KVM-ready OS.
 
    This step can be run outside the container, but you'll need to set the `BIOS` environment variable to the path to an OVMF platform firmware image. This path depends on distribution.
 
+5. When you're done testing, clean up after yourself with `./unmount-image.sh`.
+
 ## What?
 
 Network boot is a way to get an operating system (OS) running on your device without a bootable USB drive (or other removable media). With 10Gbps and even 100Gbps network adapters increasingly available, this can even be the fastest method to boot a device without an OS image on a storage device attached to a PCIe bus.
