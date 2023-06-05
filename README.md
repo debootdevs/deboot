@@ -5,6 +5,49 @@ This repo is under construction! If you want to get involved, join us on Telegra
 
 DeBoot is a project to research and implement approaches to bootloading OS images from a decentralized storage network such as Swarm or IPFS.
 
+## Repo contents
+
+`/dracut`. Submodule linking to fork of dracut with added tools for connecting to Swarm in the initramfs.
+
+`/initramfs`. Same function as `/dracut`, but using initramfs-tools instead. Incomplete.
+
+`/grub`. Tools for generating `grub.cfg` and making a bootable GRUB image with a menu enumerating Swarm hashes.
+
+`/resources`. General notes on booting devices.
+
+`/rootfs`. Scripts and Makefile for generating a simple rootfs image for testing and demonstration purposes.
+
+`/swarm.hash`. Swarm hashes of premade rootfs.
+
+## Running tests.
+
+You'll need Linux, Podman, and preferably a KVM-ready OS. 
+
+1. `cd` into `/grub`, and run the following commands:
+   
+   ```sh
+   ./init-image.sh
+   sudo ./mount-image.sh
+   ```
+   
+   If you run the first command as root, the files created will be owned by root and you will have to go through the rest of the process as root. The second command needs to be run through `sudo`.
+   
+1. Download the system container image provided [here](https://github.com/dracutdevs/dracut/pkgs/container/fedora) by the dracut devs, and run it with the command
+   
+   ```sh
+   podman run --rm -ti --cap-add=SYS_PTRACE --user 0 \
+     -v /dev:/dev -v $PATH_TO_REPO:/deboot:z \
+     $CONTAINER bash -l
+   ```
+
+   These instructions are for running rootless (i.e. as an ordinary user). If you decide to run as root as well, you need to add the `--privileged` flag or KVM will not work. For more information, see [dracut/docs/HACKING.md](https://github.com/dracutdevs/dracut/blob/master/docs/HACKING.md).
+   
+3. Change directory to `/deboot` and run `make` to generate the Swarm initramfs, `grub.cfg`, and use them to populate the GRUB image.
+
+4. Change directory back to `/grub`, and run `./test-grub.sh`. 
+
+   This step can be run outside the container, but you'll need to set the `BIOS` environment variable to the path to an OVMF platform firmware image. This path depends on distribution.
+
 ## What?
 
 Network boot is a way to get an operating system (OS) running on your device without a bootable USB drive (or other removable media). With 10Gbps and even 100Gbps network adapters increasingly available, this can even be the fastest method to boot a device without an OS image on a storage device attached to a PCIe bus.
