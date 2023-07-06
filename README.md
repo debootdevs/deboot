@@ -1,5 +1,5 @@
 🚨 ATTENTION 🚨
-This repo is under construction! If you want to get involved, join us on Telegram: https://t.me/+TnD8PDmVUIdjZWE1
+This repo is under construction! If you want to get involved, join us at #deboot:matrix.org
 
 # DeBoot
 
