@@ -1,4 +1,4 @@
-# DeBoot
+# DeBoot - express yourself through bootloading
 
 DeBoot is a project to research and implement approaches to bootloading OS images from decentralized storage networks, such as [Swarm](https://ethswarm.org) or [IPFS](https://ipfs.tech/).
 
