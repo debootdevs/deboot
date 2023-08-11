@@ -1,4 +1,4 @@
-BUILDDIR = $(realpath ./grub/build)
+BUILDDIR = $(realpath ./build)
 MOUNTDIR = $(BUILDDIR)/mnt
 # Fedora grub prefix
 GRUB_PREFIX = $(MOUNTDIR)/EFI/fedora
@@ -14,9 +14,9 @@ CONTAINER_IMAGE = ghcr.io/dracutdevs/fedora
 CONTAINER_RELEASE = "sha256:a9968a481821d4b2e09569e858a433d1e9b590b223383f5e9e7235525e536755"
 
 container:
-	podman pull $(CONTAINER_IMAGE)@$(CONTAINER_RELEASE)
+	podman image exists $(CONTAINER_IMAGE) || podman pull $(CONTAINER_IMAGE)@$(CONTAINER_RELEASE)
 
-CONTAINER_OPTS = -v $$(realpath .):/deboot -ti --rm --user 0 --cap-add=SYS_PTRACE
+CONTAINER_OPTS = -v $(realpath .):/deboot -v $(realpath .)/build/mnt:/deboot/build/mnt -ti --rm --user 0 --cap-add=SYS_PTRACE
 
 dracut/dracut-util: /usr/bin/gcc
 	sh -c "cd dracut && ./configure"
@@ -25,7 +25,7 @@ dracut/dracut-util: /usr/bin/gcc
 dracutbasedir = $(realpath ./dracut)
 
 grub: container dracut/dracut-util
-	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) make --directory /deboot --makefile grub.Makefile
+	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) make BUILDDIR=/deboot/build --directory /deboot --makefile grub.Makefile
 
 all: install-grub $(GRUB_PREFIX)/grub.cfg $(MOUNTDIR)/boot/vmlinuz $(MOUNTDIR)/boot/swarm-initrd
 
