@@ -24,46 +24,28 @@ If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/
 
 You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at `/dev/kvm`.
 
-1. Install `podman` using [these instructions](https://podman.io/docs/installation).
+1. Install the necessary packages:
+   ```sh
+   apt install pkg-config libkmod-dev podman dosfstools # Debian/Ubuntu
+   ```
+   On an RPM-based distro, replace `libkmod-dev` with `libkmod-devel`.
 
-2. Clone this repo using `git`, adding the `--recurse-submodules` flag.
+2. Clone this repo using `git --recurse-submodules`.
 
-3. Change directory to `deboot/grub`, and run the following commands:
+3. Change directory into the repo root and run the following commands:
    
    ```sh
-   ./init-image.sh
-   sudo ./mount-image.sh
+   grub/init-image.sh
+   sudo grub/mount-image.sh
    ```
    
    If you run the first command as root, the files created will be owned by root and you will have to go through the rest of the process as root. The second command needs to be run through `sudo`.
    
-4. Download the system container image provided [here](https://github.com/dracutdevs/dracut/pkgs/container/fedora) by the dracut devs, by running:
-
-   ```sh
-   podman pull ghcr.io/dracutdevs/fedora:latest
-   ```
-
-5. Run the container image with the command:
-   
-   ```sh
-   podman run --rm -ti --cap-add=SYS_PTRACE --user 0 \
-     -v /dev:/dev -v $FULL_PATH_TO_REPO:/deboot:z \
-     ghcr.io/dracutdevs/fedora:latest bash -l
-   ```
-
-   These instructions are for running rootless (i.e. as an ordinary user). If you decide to run as root as well, you need to add the `--privileged` flag or KVM will not work. For more information, see [dracut/docs/HACKING.md](https://github.com/dracutdevs/dracut/blob/master/docs/HACKING.md).
-   
-6. Change directory to `deboot/dracut` and run `./configure` then `make`.
-
-7. Change directory to `..` and set the KVERSION variable to the kernel version by running `export KVERSION=$(ls /lib/modules)`.
-
-8. Run `make`, which will generate the Swarm initramfs (`grub.cfg`) and populate the GRUB image.
+4. Run `make grub`. This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
     
-9. Change directory to `grub`, and run `./test-grub.sh`.
+5. To test the image you just built, run `make test-grub`.
 
-   This step can be run outside the container, but you'll need to set the `BIOS` environment variable to the path to an OVMF platform firmware image. This path depends on distribution.
-
-10. When you're done testing, clean up after yourself with `sudo ./unmount-image.sh`.
+6. When you're done testing, clean up after yourself with `sudo grub/unmount-image.sh`.
 
 ## What?
 
