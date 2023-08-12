@@ -28,7 +28,7 @@ grub: container dracut/dracut-util
 	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) make BUILDDIR=/deboot/build --directory /deboot --makefile grub.Makefile
 
 test-grub:
-	podman run -v $$(pwd):/deboot $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
+	podman run -v /dev:/dev -v $$(pwd):/deboot $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
 
 all: install-grub $(GRUB_PREFIX)/grub.cfg $(MOUNTDIR)/boot/vmlinuz $(MOUNTDIR)/boot/swarm-initrd
 
