@@ -25,10 +25,10 @@ dracut/dracut-util: /usr/bin/gcc
 dracutbasedir = $(realpath ./dracut)
 
 grub: container dracut/dracut-util
-	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) make BUILDDIR=/deboot/build --directory /deboot --makefile grub.Makefile
+	podman run --rm $(CONTAINER_OPTS) $(CONTAINER_IMAGE) make BUILDDIR=/deboot/build --directory /deboot --makefile grub.Makefile
 
 test-grub:
-	podman run -it -v /dev:/dev -v $$(pwd):/deboot $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
+	podman run -it --rm -v /dev:/dev -v $$(pwd):/deboot $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
 
 all: install-grub $(GRUB_PREFIX)/grub.cfg $(MOUNTDIR)/boot/vmlinuz $(MOUNTDIR)/boot/swarm-initrd
 
