@@ -7,6 +7,7 @@ HOST_EFI = /boot/efi
 PKG_INSTALL = dnf -y install
 
 KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+BEE_VERSION ?= 1.17.2
 
 ifeq ($(shell findmnt $(MOUNTDIR)),)
 $(error No mount found at $(MOUNTDIR), run 'sudo grub/mount-image.sh' first!)
@@ -43,8 +44,8 @@ dracut/dracut-util: /usr/bin/gcc
 
 install-bee: /usr/bin/bee
 
-/usr/bin/bee: bee-1.16.1.x86_64.rpm
-	-rpm -i bee-1.16.1.x86_64.rpm
+/usr/bin/bee: bee-$(BEE_VERSION).x86_64.rpm
+	-rpm -i bee-$(BEE_VERSION).x86_64.rpm
 
-bee-1.16.1.x86_64.rpm:
-	wget -nc https://github.com/ethersphere/bee/releases/download/v1.16.1/bee-1.16.1.x86_64.rpm
+bee-$(BEE_VERSION).x86_64.rpm:
+	wget -nc https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee-$(BEE_VERSION).x86_64.rpm
