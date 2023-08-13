@@ -1,24 +1,30 @@
 BUILDDIR = $(realpath ./build)
 MOUNTDIR = $(BUILDDIR)/mnt
 
-ifeq ($(shell findmnt $(MOUNTDIR)),)
-$(error No mount found at $(MOUNTDIR), run 'sudo grub/mount-image.sh' first!)
-endif
+CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --cap-add=SYS_PTRACE
+CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
+CONTAINER_RELEASE = "sha256:8e9a3947a835eab7047364ec74084fc63f9d016333b4cd9fcd8a8a8ae3afd0fd"
+BEE_VERSION ?= 1.17.2
 
-CONTAINER_IMAGE = ghcr.io/dracutdevs/fedora
-CONTAINER_RELEASE = "sha256:a9968a481821d4b2e09569e858a433d1e9b590b223383f5e9e7235525e536755"
+KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 
 container:
 	podman image exists $(CONTAINER_IMAGE) || podman pull $(CONTAINER_IMAGE)@$(CONTAINER_RELEASE)
-
-CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --user 0 --cap-add=SYS_PTRACE
 
 dracut/dracut-util: /usr/bin/gcc
 	sh -c "cd dracut && ./configure"
 	make enable_documentation=no -C dracut
 
-grub: container dracut/dracut-util
-	podman run -v $(realpath .)/build/mnt:/deboot/build/mnt $(CONTAINER_OPTS) $(CONTAINER_IMAGE) make BUILDDIR=/deboot/build --directory /deboot --makefile grub.Makefile
+grub: container initramfs/swarm-initrd
+	podman run -v $(realpath .)/build/mnt:/deboot/build/mnt \
+		$(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
+		make KVERSION=$(KVERSION) BUILDDIR=/deboot/build \
+		     --directory /deboot/grub
+
+initramfs/swarm-initrd: container dracut/dracut-util
+	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
+		make KVERSION=$(KVERSION) BEE_VERSION=$(BEE_VERSION) \
+		     --directory /deboot/initramfs swarm-initrd
 
 test-grub:
 	podman run -v /dev:/dev $(CONTAINER_OPTS) $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
