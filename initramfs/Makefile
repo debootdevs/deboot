@@ -1,7 +1,8 @@
 BUILDDIR = $(realpath ./grub/build)
 MOUNTDIR = $(BUILDDIR)/mnt
 
-KVERSION ?= $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+
 ifeq ($(BEE_VERSION),)
 	$(error Please set BEE_VERSION.)
 endif
