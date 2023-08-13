@@ -12,7 +12,7 @@ dracut/dracut-util: /usr/bin/gcc
 	make enable_documentation=no -C dracut
 
 grub: initramfs/swarm-initrd
-	make BUILDDIR=/deboot/build --directory /deboot/grub
+	make BUILDDIR=$(realpath .)/build --directory grub
 
 initramfs/swarm-initrd: dracut/dracut-util
 	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
