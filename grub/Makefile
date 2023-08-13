@@ -1,36 +1,36 @@
 BUILDDIR = $(realpath .)/build
-MOUNTDIR = $(BUILDDIR)/mnt
+IMGDIR = $(BUILDDIR)/esp
 # Fedora grub prefix
-GRUB_PREFIX = $(MOUNTDIR)/EFI/fedora
-#GRUB_PREFIX = $(MOUNTDIR)/boot/grub2
+GRUB_PREFIX = $(IMGDIR)/EFI/fedora
+#GRUB_PREFIX = $(IMGDIR)/boot/grub2
 HOST_EFI = /boot/efi
+
+CONTAINER_OPTS = -v $(realpath .):/grub -ti --rm
+CONTAINER_NAME = ghcr.io/debootdevs/fedora
+CONTAINER_RELEASE = "sha256:8e9a3947a835eab7047364ec74084fc63f9d016333b4cd9fcd8a8a8ae3afd0fd"
+CONTAINER_IMAGE = $(CONTAINER_NAME)@$(CONTAINER_RELEASE)
 
 KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 
-ifeq ($(shell findmnt $(MOUNTDIR)),)
-	$(error No mount found at $(MOUNTDIR), run 'sudo grub/mount-image.sh' first!)
-endif
-
-all: install-grub $(GRUB_PREFIX)/grub.cfg $(MOUNTDIR)/boot/vmlinuz $(MOUNTDIR)/boot/swarm-initrd
-
-install-grub:
-	@echo $(KVERSION)
-	cp -r $(HOST_EFI)/* $(MOUNTDIR)
+all: $(GRUB_PREFIX)/grub.cfg $(IMGDIR)/boot/vmlinuz $(IMGDIR)/boot/swarm-initrd
 
 $(GRUB_PREFIX)/grub.cfg: swarm.hash $(GRUB_PREFIX)
-	grub/grub-mkconfig > $@
-
-$(MOUNTDIR)/boot/vmlinuz: $(MOUNTDIR)/boot
-	cp /lib/modules/$(KVERSION)/vmlinuz $@
-
-$(MOUNTDIR)/boot/swarm-initrd: ../initramfs/swarm-initrd
-	cp ../initramfs/swarm-initrd $@
-
-$(MOUNTDIR)/boot:
-	mkdir -p $(MOUNTDIR)/boot
+	./grub-mkconfig > $@
 
 $(GRUB_PREFIX):
 	 mkdir -p $(GRUB_PREFIX)
+
+$(IMGDIR)/boot/swarm-initrd: ../initramfs/swarm-initrd
+	cp ../initramfs/swarm-initrd $@
+
+$(IMGDIR)/boot/vmlinuz: $(IMGDIR)/boot
+	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
+		make KVERSION=$(KVERSION) BUILDDIR=/deboot/build \
+		     --directory /grub --makefile grub.Makefile
+
+$(IMGDIR)/boot:
+	mkdir -p $(IMGDIR)/boot
+
 
 
 

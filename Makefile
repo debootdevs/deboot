@@ -1,5 +1,4 @@
 BUILDDIR = $(realpath ./build)
-MOUNTDIR = $(BUILDDIR)/mnt
 
 CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --cap-add=SYS_PTRACE
 CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
@@ -13,14 +12,11 @@ dracut/dracut-util: /usr/bin/gcc
 	make enable_documentation=no -C dracut
 
 grub: initramfs/swarm-initrd
-	podman run -v $(realpath .)/build/mnt:/deboot/build/mnt \
-		$(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
-		make KVERSION=$(KVERSION) BUILDDIR=/deboot/build \
-		     --directory /deboot/grub
+	make BUILDDIR=/deboot/build --directory /deboot/grub
 
 initramfs/swarm-initrd: dracut/dracut-util
 	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
-		make KVERSION=$(KVERSION) BEE_VERSION=$(BEE_VERSION) \
+		make BEE_VERSION=$(BEE_VERSION) \
 		     --directory /deboot/initramfs swarm-initrd
 
 test-grub:

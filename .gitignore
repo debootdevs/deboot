@@ -1,5 +1,6 @@
 rootfs/build/*
 grub/build/*
+build/*
 
 # vim
 **.swp
