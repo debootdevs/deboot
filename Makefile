@@ -19,6 +19,14 @@ initramfs/swarm-initrd: dracut/dracut-util
 		make BEE_VERSION=$(BEE_VERSION) \
 		     --directory /deboot/initramfs swarm-initrd
 
+install-grub:
+	grub/init-image.sh
+	grub/mount-image.sh
+	cp -r $(BUILDDIR)/esp -T $(BUILDDIR)/mnt
+	# grub/unmount-image.sh
+	umount $(BUILDDIR)/mnt
+
+
 test-grub:
 	podman run -v /dev:/dev $(CONTAINER_OPTS) $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
 
