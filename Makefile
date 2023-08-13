@@ -11,8 +11,13 @@ dracut/dracut-util: /usr/bin/gcc
 	sh -c "cd dracut && ./configure"
 	make enable_documentation=no -C dracut
 
-grub: initramfs/swarm-initrd
-	make BUILDDIR=$(realpath .)/build --directory grub
+grub: $(BUILDDIR)/grub.img $(BUILDDIR)/esp
+
+$(BUILDDIR)/grub.img: initramfs/swarm-initrd
+	grub/init-image.sh
+
+$(BUILDDIR)/esp:
+	make BUILDDIR=$(BUILDDIR) --directory grub
 
 initramfs/swarm-initrd: dracut/dracut-util
 	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
@@ -20,7 +25,6 @@ initramfs/swarm-initrd: dracut/dracut-util
 		     --directory /deboot/initramfs swarm-initrd
 
 install-grub:
-	grub/init-image.sh
 	grub/mount-image.sh
 	cp -r $(BUILDDIR)/esp -T $(BUILDDIR)/mnt
 	# grub/unmount-image.sh
