@@ -15,7 +15,7 @@ KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 all: $(GRUB_PREFIX)/grub.cfg $(IMGDIR)/boot/vmlinuz $(IMGDIR)/boot/swarm-initrd
 
 $(GRUB_PREFIX)/grub.cfg: ../swarm.hash $(GRUB_PREFIX)
-	./grub-mkconfig > $@
+	HASHDIR=../swarm.hash ./grub-mkconfig > $@
 
 $(GRUB_PREFIX): $(IMGDIR)
 	 mkdir -p $(GRUB_PREFIX)
