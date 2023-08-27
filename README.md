@@ -2,9 +2,13 @@
 
 DeBoot is a project to research and implement approaches to bootloading OS images from decentralized storage networks, such as [Swarm](https://ethswarm.org) or [IPFS](https://ipfs.tech/).
 
+## Milestone report
+
+DeBoot reached a milestone in its development: [read more about DeBoot's recent milestone](https://hackmd.io/@i79XZRmjR86P6AbhL0jwVQ/BJUaVuaUn).
+
 ## Get involved
 
-If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/#/#deboot:matrix.org) or the (less active) [DeBoot chat on Telegram](https://t.me/+hd2JXtyitYw0ZWE9).
+If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/#/#deboot:matrix.org) or [the DeBoot chat on Telegram](https://t.me/+hd2JXtyitYw0ZWE9).
 
 ## Repo contents
 
