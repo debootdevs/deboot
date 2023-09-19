@@ -26,7 +26,7 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 1. Install the necessary packages:
    ```sh
-   apt install pkg-config libkmod-dev podman dosfstools # Debian/Ubuntu
+   apt install pkg-config libkmod-dev podman dosfstools make # Debian/Ubuntu
    ```
    On an RPM-based distro, replace `libkmod-dev` with `libkmod-devel`.
 
