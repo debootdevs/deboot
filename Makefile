@@ -32,5 +32,8 @@ install-grub:
 
 
 test-grub:
-	podman run -v /dev:/dev $(CONTAINER_OPTS) $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
+	podman run --runtime crun -v /dev:/dev $(CONTAINER_OPTS) $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
 
+clean:
+	-rm initramfs/swarm-initrd
+	-rm build/*

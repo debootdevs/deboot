@@ -1,6 +1,7 @@
 rootfs/build/*
 grub/build/*
 build/*
+initramfs/swarm-initrd
 
 # vim
 **.swp

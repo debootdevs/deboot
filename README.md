@@ -26,24 +26,19 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 1. Install the necessary packages:
    ```sh
-   apt install pkg-config libkmod-dev podman dosfstools make # Debian/Ubuntu
+   apt install pkg-config libkmod-dev podman dosfstools make crun # Debian/Ubuntu
    ```
    On an RPM-based distro, replace `libkmod-dev` with `libkmod-devel`.
 
 2. Clone this repo using `git --recurse-submodules`.
 
-3. Change directory into the repo root and run the following commands:
-   
-   ```sh
-   grub/init-image.sh
-   sudo grub/mount-image.sh
-   ```
-   
-   If you run the first command as root, the files created will be owned by root and you will have to go through the rest of the process as root. The second command needs to be run through `sudo`.
-   
-4. Run `make grub`. This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
+3. Run `make BEE_VERSION=$LATEST_VERSION grub` where `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
     
-5. To test the image you just built, run `make test-grub`.
+4. Run `sudo make install-grub` to install grub into `grub.img`.
+
+5. To test the image you just built, run `make test-grub`. Select an item from the menu corresponding to the Swarm hash of the userspace you want to boot into.
+   
+   If something goes wrong and you get stuck in the QEMU console, press the sequence `<Ctrl>+a, x` to quit.
 
 6. When you're done testing, clean up after yourself with `sudo grub/unmount-image.sh`.
 
