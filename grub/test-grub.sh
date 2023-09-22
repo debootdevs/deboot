@@ -9,7 +9,7 @@ if [ -z $GRUB ]; then
     exit 1
 fi
 
-if [-z $TEST_SUBNET ]; then
+if [ -z $TEST_SUBNET ]; then
     echo "Please set TEST_SUBNET to a subnet with a route to the Internet!"
 fi
 
