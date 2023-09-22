@@ -30,13 +30,13 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 1. Install the necessary packages:
    ```sh
-   apt install pkg-config libkmod-dev podman dosfstools make crun # Debian/Ubuntu
+   apt install pkg-config libkmod-dev podman dosfstools git make crun gcc+ # Debian/Ubuntu
    ```
    On an RPM-based distro, replace `libkmod-dev` with `libkmod-devel`.
 
 2. Clone this repo using `git --recurse-submodules`.
 
-3. Run `make BEE_VERSION=$LATEST_VERSION grub` where `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
+3. Change to the repository's home directory, and run `make BEE_VERSION=$LATEST_VERSION grub` where `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
     
 4. Run `sudo make install-grub` to install grub into `grub.img`.
 
