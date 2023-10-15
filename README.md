@@ -50,7 +50,7 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 Network boot is a way to get an operating system (OS) running on your device without a bootable USB drive (or other removable media). With 10Gbps and even 100Gbps network adapters increasingly available, this can even be the fastest method to boot a device without an OS image on a storage device attached to a PCIe bus.
 
-Typically, a network boot retrieves a bootable image from a server on the local network, which the user sets up themselves (and could be on the router itself). It uses a protocol called PXE, w
+Typically, a network boot retrieves a bootable image from a server on the local network, which the user sets up themselves (and could be on the router itself).
 
 ## Why?
 
