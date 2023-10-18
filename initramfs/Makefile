@@ -12,7 +12,7 @@ dracutbasedir = $(realpath ../dracut)
 
 swarm-initrd: /usr/bin/bee $(dracutbasedir)/dracut-util
 	$(dracutbasedir)/dracut.sh -l \
-		-a "bzz network-legacy" \
+		-a "bzz network-legacy drm" \
 		-o iscsi \
 		--no-hostonly --no-hostonly-cmdline \
 		-f $@ $(KVERSION)
