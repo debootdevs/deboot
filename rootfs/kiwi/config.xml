@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<image schemaversion="6.8" name="Fedora-38.0_appliance">
+    <description type="system">
+        <author>Andrew W. Macpherson</author>
+        <contact>mail@awmacpherson.com</contact>
+        <specification>Fedora 38 Appliance</specification>
+    </description>
+    <profiles>
+        <profile name="Live" description="Live image"/>
+    </profiles>
+    <preferences>
+        <version>1.0.0</version>
+        <packagemanager>dnf</packagemanager>
+        <locale>en_US</locale>
+        <keytable>us</keytable>
+        <timezone>UTC</timezone>
+        <rpm-check-signatures>false</rpm-check-signatures>
+    </preferences>
+    <preferences profiles="Live">
+        <type image="kis" filesystem="squashfs"/>
+    </preferences>
+    <users>
+        <user password="$6$KYB00jA.jgaG6g7q$h59VHRQbwk9vnHzwyu53ZEUfUVKf.Veljn269vnVxCcqFCuOytvuA/Ys20puoOrbWACSmc5mLvjr9yztrcKmP." home="/root" name="root" groups="root"/>
+    </users>
+    <repository type="rpm-md" alias="Fedora38" sourcetype="metalink">
+        <source path="https://mirrors.fedoraproject.org/metalink?repo=fedora-38&amp;arch=aarch64"/>
+    </repository>
+    <repository type="rpm-md" alias="Fedora38-updates" sourcetype="metalink">
+        <source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f38&amp;arch=aarch64"/>
+    </repository>
+    <packages type="image">
+        <package name="selinux-policy-targeted"/>
+        <package name="iproute"/>
+        <package name="iputils"/>
+        <package name="systemd-networkd"/>
+        <package name="neovim"/>
+        <package name="tzdata"/>
+    </packages>
+    <packages type="bootstrap">
+        <package name="glibc-minimal-langpack"/>
+        <package name="glibc-langpack-en"/>
+        <package name="filesystem"/>
+        <package name="basesystem"/>
+    </packages>
+</image>
