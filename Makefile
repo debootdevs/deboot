@@ -30,13 +30,15 @@ $(BUILDDIR)/boot:
 
 kernel: $(BUILDDIR)/boot/vmlinuz
 
-$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/boot
+$(BUILDDIR)/boot/vmlinuz: $(KERNEL) $(BUILDDIR)/boot
 	cp $(KERNEL) $@
 
 initramfs: $(BUILDDIR)/boot/initramfs
 
-$(BUILDDIR)/boot/initramfs: $(BUILDDIR)/boot initramfs/swarm-initrd
+$(BUILDDIR)/boot/initramfs: initramfs/swarm-initrd $(BUILDDIR)/boot
 	cp initramfs/swarm-initrd $@
+
+###### loader #######
 
 ifeq ($(KERNEL_LOADER), grub)
 # Assume Fedora-style GRUB with support for Bootloader Spec files
@@ -44,7 +46,7 @@ boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/grub2/gru
 
 $(BUILDDIR)/boot/loader/entries/swarm.conf:
 	mkdir -p $(@D)
-	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2 > @
+	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2 > $@
 
 $(BUILDDIR)/boot/grub2/grub.cfg:
 	mkdir -p $(@D)
@@ -54,8 +56,8 @@ dtb: # not sure if this is needed for GRUB boot?
 
 loader: $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
 
-$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI:
-	cp -r /boot/efi -T $(BUILDDIR)/efi
+$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: /boot/efi
+	cp -r $< -T $(BUILDDIR)/efi
 
 else ifeq ($(KERNEL_LOADER), u-boot)
 boot-spec: $(BUILDDIR)/boot/extlinux/extlinux.conf
@@ -66,8 +68,8 @@ $(BUILDDIR)/boot/extlinux/extlinux.conf:
 
 dtb: $(BUILDDIR)/boot/dtb
 
-$(BUILDDIR)/boot/dtb:
-	cp -r /boot/dtb $@
+$(BUILDDIR)/boot/dtb: /boot/dtb
+	cp -r $$(readlink -f $<) -T $@
 
 loader: 
 # U-Boot doesn't need additional loader
@@ -79,9 +81,8 @@ endif
 
 install: $(BUILDDIR)/boot.img boot-tree 
 	$(eval TMP := $(shell mktemp -d))
-	mkdir $(TMP)
 	mount $< $(TMP)
-	install -d $(BUILDDIR)/boot $(TMP)
+	cp -r $(BUILDDIR)/boot -T $(TMP)
 	umount $(TMP)
 	rmdir $(TMP)
 
@@ -97,7 +98,7 @@ $(BUILDDIR)/esp:
 	make BUILDDIR=$(BUILDDIR) --directory grub
 
 initramfs/swarm-initrd:
-	make BEE_VERSION=$(BEE_VERSION) --directory /deboot/initramfs swarm-initrd
+	make BEE_VERSION=$(BEE_VERSION) --directory ./initramfs swarm-initrd
 
 install-grub:
 	grub/mount-image.sh
