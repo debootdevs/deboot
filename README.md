@@ -2,9 +2,13 @@
 
 DeBoot is a project to research and implement approaches to bootloading OS images from decentralized storage networks, such as [Swarm](https://ethswarm.org) or [IPFS](https://ipfs.tech/).
 
+## Milestone report
+
+DeBoot reached a milestone in its development: [read more about DeBoot's recent milestone](https://hackmd.io/@i79XZRmjR86P6AbhL0jwVQ/BJUaVuaUn).
+
 ## Get involved
 
-If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/#/#deboot:matrix.org) or the (less active) [DeBoot chat on Telegram](https://t.me/+hd2JXtyitYw0ZWE9).
+If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/#/#deboot:matrix.org) or [the DeBoot chat on Telegram](https://t.me/+hd2JXtyitYw0ZWE9).
 
 ## Repo contents
 
@@ -26,13 +30,13 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 1. Install the necessary packages:
    ```sh
-   apt install pkg-config libkmod-dev podman dosfstools make crun # Debian/Ubuntu
+   apt install pkg-config libkmod-dev podman dosfstools git make crun gcc+ # Debian/Ubuntu
    ```
    On an RPM-based distro, replace `libkmod-dev` with `libkmod-devel`.
 
 2. Clone this repo using `git --recurse-submodules`.
 
-3. Run `make BEE_VERSION=$LATEST_VERSION grub` where `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
+3. Change to the repository's home directory, and run `make BEE_VERSION=$LATEST_VERSION grub` where `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
     
 4. Run `sudo make install-grub` to install grub into `grub.img`.
 
@@ -46,7 +50,7 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 Network boot is a way to get an operating system (OS) running on your device without a bootable USB drive (or other removable media). With 10Gbps and even 100Gbps network adapters increasingly available, this can even be the fastest method to boot a device without an OS image on a storage device attached to a PCIe bus.
 
-Typically, a network boot retrieves a bootable image from a server on the local network, which the user sets up themselves (and could be on the router itself). It uses a protocol called PXE, w
+Typically, a network boot retrieves a bootable image from a server on the local network, which the user sets up themselves (and could be on the router itself).
 
 ## Why?
 
