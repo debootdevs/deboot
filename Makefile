@@ -3,19 +3,60 @@ BUILDDIR = $(realpath ./build)
 CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --cap-add=SYS_PTRACE
 CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
 CONTAINER_RELEASE = "sha256:8e9a3947a835eab7047364ec74084fc63f9d016333b4cd9fcd8a8a8ae3afd0fd"
-BEE_VERSION ?= 1.17.2
+BEE_VERSION ?= 1.17.5
 
 KVERSION ?= $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+KERNEL ?= /lib/modules/$(KVERSION)/vmlinuz
 LOADER ?= grub
 
+.PHONY: extlinux grub install install-grub clean initramfs boot-tree
+
+### BOOT-TREE ################################################################
+
+boot-tree: $(BUILDDIR)/boot kernel initramfs boot-spec dtb
+
+$(BUILDDIR)/boot:
+	mkdir -p $@
+
+kernel: $(BUILDDIR)/boot/vmlinuz
+
+$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/boot
+	cp $(KERNEL) $@
+
+initramfs: $(BUILDDIR)/boot/initramfs
+
+$(BUILDDIR)/boot/initramfs: $(BUILDDIR)/boot initramfs/swarm-initrd
+	cp initramfs/swarm-initrd $@
+
+ifeq ($(LOADER), grub)
+boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf
+
+$(BUILDDIR)/boot/loader/entries/swarm.conf:
+	jinja2 -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2
+
+dtb:
+else ifeq ($(LOADER), u-boot)
+boot-spec: $(BUILDDIR)/boot/extlinux/extlinux.conf
 
 $(BUILDDIR)/boot/extlinux/extlinux.conf:
 	jinja2 -D kernel=$(KVERSION) -D hash=$(HASH) loader/u-boot/extlinux.conf.j2 > $@
 
+dtb: $(BUILDDIR)/boot/dtb
+
+$(BUILDDIR)/boot/dtb:
+	cp -r /boot/dtb $@
+else
+$(error Please set LOADER to either "grub" or "u-boot")
+endif
+
+grub: $(BUILDDIR)/boot/loader/entries/ $(BUILDDIR)/boot/vmlinuz $(BUILDDIR)/boot/initramfs
+
+### INSTALL ##################################################################
+
 $(BUILDDIR)/boot.img:
 	loader/init-image.sh $@
 
-MKFS_VFAT=$(PATH=/sbin:/usr/sbin:$PATH which mkfs.vfat)
+
 
 $(BUILDDIR)/grub.img: initramfs/swarm-initrd
 	grub/init-image.sh

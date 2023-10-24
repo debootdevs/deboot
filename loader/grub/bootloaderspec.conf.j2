@@ -1,0 +1,5 @@
+title {{ name }}
+version {{ kernel }}
+linux /boot/vmlinuz-{{ kernel }}
+initrd /boot/swarm-initrd-{{ kernel }}
+options root=live:bzz://{{ hash }} consoleblank=0 systemd.show_status=true crashkernel=auto no_timer_check console=tty1 console=ttyS0,115200n8

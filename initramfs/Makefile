@@ -1,6 +1,3 @@
-BUILDDIR = $(realpath ./grub/build)
-MOUNTDIR = $(BUILDDIR)/mnt
-
 KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 ARCH = $(shell uname -m)
 
@@ -8,7 +5,7 @@ ifeq ($(BEE_VERSION),)
 $(error Please set BEE_VERSION.)
 endif
 
-dracutbasedir = $(realpath ../dracut)
+dracutbasedir = $(realpath ./dracut)
 
 swarm-initrd: /usr/bin/bee $(dracutbasedir)/dracut-util
 	$(dracutbasedir)/dracut.sh -l \

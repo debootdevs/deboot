@@ -1,0 +1,7 @@
+{% for image in images %}
+label {{ image.name }}
+    kernel /boot/vmlinuz-{{ image.kernel }}
+    initrd /boot/swarm-initrd-{{ image.kernel }}
+    fdtdir /boot/dtb-{{ image.kernel }}
+    append root=live:bzz://{{ image.hash }} consoleblank=0 crashkernel=auto no_timer_check console=tty1 console=ttyS0,115200n systemd.show_status=true 
+{% endfor %}
