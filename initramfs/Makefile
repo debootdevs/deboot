@@ -5,7 +5,7 @@ ifeq ($(BEE_VERSION),)
 $(error Please set BEE_VERSION.)
 endif
 
-dracutbasedir = $(realpath ./dracut)
+dracutbasedir = dracut
 
 swarm-initrd: /usr/bin/bee $(dracutbasedir)/dracut-util
 	$(dracutbasedir)/dracut.sh -l \

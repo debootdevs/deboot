@@ -5,15 +5,25 @@ CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
 CONTAINER_RELEASE = "sha256:8e9a3947a835eab7047364ec74084fc63f9d016333b4cd9fcd8a8a8ae3afd0fd"
 BEE_VERSION ?= 1.17.5
 
+ARCH = $(shell uname -m)
+ifeq ($(ARCH), aarch64)
+SHORT_ARCH = AA64
+else ifeq ($(ARCH), x86_64)
+SHORT_ARCH = X64
+else
+$(error Sorry, only aarch64 and x86_64 architectures are supported at the moment)
+endif
+
 KVERSION ?= $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 KERNEL ?= /lib/modules/$(KVERSION)/vmlinuz
-LOADER ?= grub
+NAME ?= Swarm Linux
+KERNEL_LOADER ?= grub
 
 .PHONY: extlinux grub install install-grub clean initramfs boot-tree
 
 ### BOOT-TREE ################################################################
 
-boot-tree: $(BUILDDIR)/boot kernel initramfs boot-spec dtb
+boot-tree: $(BUILDDIR)/boot loader kernel initramfs boot-spec dtb
 
 $(BUILDDIR)/boot:
 	mkdir -p $@
@@ -28,35 +38,57 @@ initramfs: $(BUILDDIR)/boot/initramfs
 $(BUILDDIR)/boot/initramfs: $(BUILDDIR)/boot initramfs/swarm-initrd
 	cp initramfs/swarm-initrd $@
 
-ifeq ($(LOADER), grub)
-boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf
+ifeq ($(KERNEL_LOADER), grub)
+# Assume Fedora-style GRUB with support for Bootloader Spec files
+boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/grub2/grub.cfg
 
 $(BUILDDIR)/boot/loader/entries/swarm.conf:
-	jinja2 -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2
+	mkdir -p $(@D)
+	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2 > @
 
-dtb:
-else ifeq ($(LOADER), u-boot)
+$(BUILDDIR)/boot/grub2/grub.cfg:
+	mkdir -p $(@D)
+	grub2-mkconfig -o $@
+
+dtb: # not sure if this is needed for GRUB boot?
+
+loader: $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
+
+$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI:
+	cp -r /boot/efi -T $(BUILDDIR)/efi
+
+else ifeq ($(KERNEL_LOADER), u-boot)
 boot-spec: $(BUILDDIR)/boot/extlinux/extlinux.conf
 
 $(BUILDDIR)/boot/extlinux/extlinux.conf:
-	jinja2 -D kernel=$(KVERSION) -D hash=$(HASH) loader/u-boot/extlinux.conf.j2 > $@
+	mkdir -p $(@D)
+	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/u-boot/extlinux.conf.j2 > $@
 
 dtb: $(BUILDDIR)/boot/dtb
 
 $(BUILDDIR)/boot/dtb:
 	cp -r /boot/dtb $@
-else
-$(error Please set LOADER to either "grub" or "u-boot")
-endif
 
-grub: $(BUILDDIR)/boot/loader/entries/ $(BUILDDIR)/boot/vmlinuz $(BUILDDIR)/boot/initramfs
+loader: 
+# U-Boot doesn't need additional loader
+else
+$(error Please set KERNEL_LOADER to either "grub" or "u-boot")
+endif
 
 ### INSTALL ##################################################################
 
+install: $(BUILDDIR)/boot.img boot-tree 
+	$(eval TMP := $(shell mktemp -d))
+	mkdir $(TMP)
+	mount $< $(TMP)
+	install -d $(BUILDDIR)/boot $(TMP)
+	umount $(TMP)
+	rmdir $(TMP)
+
 $(BUILDDIR)/boot.img:
-	loader/init-image.sh $@
+	loader/init-image.sh $@ $<
 
-
+### OLD ######################################################################
 
 $(BUILDDIR)/grub.img: initramfs/swarm-initrd
 	grub/init-image.sh
@@ -65,14 +97,7 @@ $(BUILDDIR)/esp:
 	make BUILDDIR=$(BUILDDIR) --directory grub
 
 initramfs/swarm-initrd:
-	podman run $(CONTAINER_OPTS) $(CONTAINER_IMAGE) \
-		make BEE_VERSION=$(BEE_VERSION) \
-		     --directory /deboot/initramfs swarm-initrd
-
-install:
-	mount $(BUILDDIR)/boot.img $(BUILDDIR)/mnt
-	install -d $(BUILDDIR)/boot $(BUILDDIR)/mnt
-	umount $(BUILDDIR)/mnt
+	make BEE_VERSION=$(BEE_VERSION) --directory /deboot/initramfs swarm-initrd
 
 install-grub:
 	grub/mount-image.sh
