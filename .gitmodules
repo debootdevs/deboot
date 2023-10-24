@@ -1,4 +1,4 @@
 [submodule "dracut"]
-	path = dracut
+	path = initramfs/dracut
 	url = https://github.com/awmacpherson/dracut.git
 	branch = ethswarm
