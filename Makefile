@@ -39,7 +39,7 @@ $(BUILDDIR)/boot/initramfs: initramfs/swarm-initrd $(BUILDDIR)/boot
 	cp initramfs/swarm-initrd $@
 
 ###### loader #######
-
+######### GRUB #########
 ifeq ($(KERNEL_LOADER), grub)
 # Assume Fedora-style GRUB with support for Bootloader Spec files
 boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/grub2/grub.cfg
@@ -59,6 +59,7 @@ loader: $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
 $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: /boot/efi
 	cp -r $< -T $(BUILDDIR)/efi
 
+######### U-BOOT #########
 else ifeq ($(KERNEL_LOADER), u-boot)
 boot-spec: $(BUILDDIR)/boot/extlinux/extlinux.conf
 
