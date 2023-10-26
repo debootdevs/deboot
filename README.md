@@ -12,15 +12,13 @@ If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/
 
 ## Repo contents
 
-`/dracut`. Submodule linking to fork of dracut with added tools for connecting to Swarm in the initramfs.
+`/initramfs`. Tools and scripts for building initramfs.
 
-`/initramfs`. Same function as `/dracut`, but using initramfs-tools instead. Incomplete.
-
-`/grub`. Tools for generating `grub.cfg` and making a bootable GRUB image with a menu enumerating Swarm hashes.
+`/loader`. Templates for instructions for kernel loaders. GRUB and U-Boot are supported.
 
 `/resources`. General notes on booting devices.
 
-`/rootfs`. Scripts and Makefile for generating a simple rootfs image for testing and demonstration purposes.
+`/rootfs`. Scripts and tools for generating squashfs images.
 
 `/swarm.hash`. Swarm hashes of premade rootfs.
 
@@ -32,19 +30,30 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
    ```sh
    apt install pkg-config libkmod-dev podman dosfstools git make crun gcc+ # Debian/Ubuntu
    ```
-   On an RPM-based distro, replace `libkmod-dev` with `libkmod-devel`.
+   On OpenSUSE, replace `libkmod-dev` with `libkmod-devel`. On Fedora it's `kmod-devel`.
 
 2. Clone this repo using `git --recurse-submodules`.
 
-3. Change to the repository's home directory, and run `make BEE_VERSION=$LATEST_VERSION grub` where `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). This will create a bootable GRUB image `build/grub.img` containing our Swarm initramfs. It may take a while.
+3. Change to the repository's home directory. If you want to run the build inside a virtual environment (i.e. container), run
+   ```sh
+   make build-env
+   make init-env
+   ```
+   to enter an isolated shell.
+
+4. Run `make KERNEL_LOADER=u-boot BEE_VERSION=$LATEST_VERSION boot-tree` where:
+   * `$HASH` is the Swarm hash of a premade rootfs (chosen from the swarm.hash directory if you haven't made one yourself).
+   * `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (e.g. `1.17.4` at time of writing). 
+   This will create a boot directeory tree `build/boot/` containing our Swarm initramfs. It may take a while.
     
-4. Run `sudo make install-grub` to install grub into `grub.img`.
+4. Run `sudo make install-boot` to install the bootfs into `boot.img`. This image can be flashed to an SD card.
+
+*This last step is for testing boot from UEFI; ignore it if you are using U-Boot.*
 
 5. To test the image you just built, run `make test-grub`. Select an item from the menu corresponding to the Swarm hash of the userspace you want to boot into.
    
    If something goes wrong and you get stuck in the QEMU console, press the sequence `<Ctrl>+a, x` to quit.
 
-6. When you're done testing, clean up after yourself with `sudo grub/unmount-image.sh`.
 
 ## What?
 

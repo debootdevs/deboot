@@ -21,6 +21,14 @@ KERNEL_LOADER ?= grub
 
 .PHONY: extlinux grub install install-grub clean initramfs boot-tree
 
+### BUILD-ENV ################################################################
+
+build-env:
+    podman build . -t deboot-build
+
+init-env:
+    podman run -v ./:/deboot -v /boot:/boot:ro -ti deboot-build bash
+
 ### BOOT-TREE ################################################################
 
 boot-tree: $(BUILDDIR)/boot loader kernel initramfs boot-spec dtb
@@ -112,4 +120,4 @@ test-grub:
 
 clean:
 	-rm initramfs/swarm-initrd
-	-rm $(BUILDDIR)/*
+	-rm -rf $(BUILDDIR)/*
