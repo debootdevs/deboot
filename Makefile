@@ -1,4 +1,4 @@
-BUILDDIR = $(realpath ./build)
+BUILDDIR = $(abspath ./build)
 
 CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --cap-add=SYS_PTRACE
 CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
@@ -24,10 +24,10 @@ KERNEL_LOADER ?= grub
 ### BUILD-ENV ################################################################
 
 build-env:
-    podman build . -t deboot-build
+	podman build . -t deboot-build
 
 init-env:
-    podman run -v ./:/deboot -v /boot:/boot:ro -ti deboot-build bash
+	podman run -v ./:/deboot -v /boot:/boot:ro -ti deboot-build bash
 
 ### BOOT-TREE ################################################################
 
