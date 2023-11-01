@@ -1,10 +1,14 @@
 #!/bin/sh
 
-BOOT_IMG=$(readlink -f $1)
+BOOT_IMG=$1
 
 # locate mkfs.vfat
-MKFS_VFAT=$(PATH=/sbin:/usr/sbin:$PATH which mkfs.vfat)
+#MKFS_VFAT=$(PATH=/sbin:/usr/sbin:$PATH which mkfs.vfat)
+#SGDISK=$(PATH=/sbin:/usr/sbin:$PATH which sgdisk)
+
+# make GPT disk image
 
 # main thread
-fallocate -l 255m $BOOT_IMG
-$MKFS_VFAT -n DEBOOT $BOOT_IMG
+# fallocate -l 255m $BOOT_IMG # not supported in WSL
+dd if=/dev/zero of=$BOOT_IMG bs=1M count=255
+sgdisk --new=1:0:0 $BOOT_IMG

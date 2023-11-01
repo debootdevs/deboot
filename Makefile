@@ -88,15 +88,18 @@ endif
 
 ### INSTALL ##################################################################
 
-install: $(BUILDDIR)/boot.img boot-tree 
+install: $(BUILDDIR)/boot.vfat
 	$(eval TMP := $(shell mktemp -d))
 	mount $< $(TMP)
 	cp -r $(BUILDDIR)/boot -T $(TMP)
 	umount $(TMP)
 	rmdir $(TMP)
 
+$(BUILDDIR)/boot.vfat: | $(BUILDDIR)/boot.img
+	loader/init-vfat.sh $@ $|
+
 $(BUILDDIR)/boot.img:
-	loader/init-image.sh $@ $<
+	loader/init-image.sh $@
 
 ### OLD ######################################################################
 
