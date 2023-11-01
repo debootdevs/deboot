@@ -26,7 +26,7 @@ If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/
 
 You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at `/dev/kvm`.
 
-1. Install podman.
+1. Install podman, slirp4netns, uidmap
 
 2. Clone this repo using `git --recurse-submodules -b aarch64`.
 
@@ -37,9 +37,10 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
    ```
    to set up the build environment (container) and enter an isolated shell.
 
-4. Run `make KERNEL_LOADER=u-boot BEE_VERSION=$LATEST_VERSION boot-tree HASH` where:
+4. Change to the `deboot` directory, then run `make KERNEL_LOADER=u-boot BEE_VERSION=$LATEST_VERSION boot-tree HASH` where:
    * `$HASH` is the Swarm hash of a premade rootfs. If you haven't made one yourself, pick one of the filenames in the swarm.hash directory, e.g. `HASH=$(ls ./swarm.hash | grep ebf).
    * `$LATEST_VERSION` is set to the latest version of the bee node released on https://github.com/ethersphere/bee/release (`1.17.5` at time of writing). 
+   
    This will create a boot directeory tree `build/boot/` containing our Swarm initramfs.
     
 5. Exit the container.
