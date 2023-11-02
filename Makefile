@@ -15,7 +15,7 @@ $(error Sorry, only aarch64 and x86_64 architectures are supported at the moment
 endif
 
 KVERSION ?= $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
-KERNEL ?= /lib/modules/$(KVERSION)/vmlinuz
+KERNEL ?= /boot/vmlinuz-$(KVERSION)
 NAME ?= Swarm Linux
 KERNEL_LOADER ?= grub
 
@@ -27,7 +27,7 @@ build-env:
 	podman build . -t deboot-build
 
 init-env:
-	podman run -v ./:/deboot -v /boot:/boot:ro -ti deboot-build bash
+	podman run -v ./:/deboot -v /boot:/boot:ro -v /lib/modules:/lib/modules:ro -ti deboot-build bash
 
 ### BOOT-TREE ################################################################
 
@@ -39,7 +39,7 @@ $(BUILDDIR)/boot:
 kernel: $(BUILDDIR)/boot/vmlinuz
 
 $(BUILDDIR)/boot/vmlinuz: $(KERNEL) $(BUILDDIR)/boot
-	cp $(KERNEL) $@
+	cp $< $@
 
 initramfs: $(BUILDDIR)/boot/initramfs
 
