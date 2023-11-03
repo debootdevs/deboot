@@ -14,8 +14,8 @@ else
 $(error Sorry, only aarch64 and x86_64 architectures are supported at the moment)
 endif
 
-KVERSION ?= $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
-KERNEL ?= /boot/vmlinuz-$(KVERSION)
+KVERSION ?= $(shell find $(PREFIX)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+KERNEL ?= $(PREFIX)/boot/vmlinuz-$(KVERSION)
 NAME ?= Swarm Linux
 KERNEL_LOADER ?= grub
 
@@ -23,11 +23,18 @@ KERNEL_LOADER ?= grub
 
 ### BUILD-ENV ################################################################
 
-build-env:
-	podman build . -t deboot-build
+build-env: env.json
 
-init-env:
-	podman run -v ./:/deboot -v /boot:/boot:ro -v /lib/modules:/lib/modules:ro -ti deboot-build bash
+env.json: Containerfile
+	podman build . -t deboot-build
+	podman image inspect deboot-build > $@
+
+init-env: env.json
+	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
+
+rm-env:
+	-podman rmi deboot-build
+	-rm env.json
 
 ### BOOT-TREE ################################################################
 
@@ -64,7 +71,7 @@ dtb: # not sure if this is needed for GRUB boot?
 
 loader: $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
 
-$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: /boot/efi
+$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: $(PREFIX)/boot/efi
 	cp -r $< -T $(BUILDDIR)/efi
 
 ######### U-BOOT #########
@@ -77,7 +84,7 @@ $(BUILDDIR)/boot/extlinux/extlinux.conf:
 
 dtb: $(BUILDDIR)/boot/dtb
 
-$(BUILDDIR)/boot/dtb: /boot/dtb
+$(BUILDDIR)/boot/dtb: $(PREFIX)/boot/dtb
 	cp -r $$(readlink -f $<) -T $@
 
 loader: 
@@ -88,18 +95,24 @@ endif
 
 ### INSTALL ##################################################################
 
-install: $(BUILDDIR)/boot.vfat
+install: $(BUILDDIR)/boot.part
 	$(eval TMP := $(shell mktemp -d))
 	mount $< $(TMP)
+	rm -rf $(TMP)/*
 	cp -r $(BUILDDIR)/boot -T $(TMP)
 	umount $(TMP)
 	rmdir $(TMP)
 
-$(BUILDDIR)/boot.vfat: | $(BUILDDIR)/boot.img
+ifeq ($(KERNEL_LOADER), u-boot)
+$(BUILDDIR)/boot.part: 
+	loader/cp-image.sh $(BOOT_DEV) $(BUILDDIR)/boot.img $@
+else
+$(BUILDDIR)/boot.part: | $(BUILDDIR)/boot.img
 	loader/init-vfat.sh $@ $|
 
 $(BUILDDIR)/boot.img:
 	loader/init-image.sh $@
+endif
 
 ### OLD ######################################################################
 
