@@ -10,7 +10,7 @@ DeBoot reached the following milestones in its development:
   - demonstration of a minimum viable DeBoot mechanism.
 
 - **Q2 2023: `x86-64` Support**:
-  - Alpha mechanism working on x86+64 architectures. Proven in both virtual and physical hardware.
+  - Alpha mechanism working on x86-64 architectures. Proven in both virtual and physical hardware.
   - https://hackmd.io/@i79XZRmjR86P6AbhL0jwVQ/BJUaVuaUn
 
 - **Q3 2023: `aarch64` Support**:
