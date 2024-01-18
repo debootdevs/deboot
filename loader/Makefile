@@ -14,47 +14,19 @@ else
 $(error Sorry, only aarch64 and x86_64 architectures are supported at the moment)
 endif
 
-KVERSION ?= $(shell find $(PREFIX)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
-KERNEL ?= $(PREFIX)/boot/vmlinuz-$(KVERSION)
+KVERSION ?= $(shell find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+ifeq ($(KVERSION), )
+$(error No kernel found! Aborting)
+endif
+KERNEL ?= $(SYSROOT)/lib/modules/$(KVERSION)/vmlinuz
 NAME ?= Swarm Linux
 KERNEL_LOADER ?= grub
 
 .PHONY: extlinux grub install install-grub clean initramfs boot-tree
 
-### SYSROOT ##################################################################
-
-SYSROOT = $(BUILDDIR)/sysroot
-
-appliance: $(SYSROOT)/squashfs.img
-
-$(SYSROOT)/etc/os-release:
-	make SYSROOT=$(SYSROOT) --directory appliance
-
-$(SYSROOT)/squashfs.img: $(SYSROOT)/etc/os-release
-	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
-
-### BUILD-ENV ################################################################
-
-build-env: env.json
-
-env.json: Containerfile
-	podman build . -t deboot-build
-	podman image inspect deboot-build > $@
-
-init-env: env.json
-	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
-
-rm-env:
-	-podman rmi deboot-build
-	-rm env.json
-
 ### BOOT-TREE ################################################################
 
-boot-tree: $(SYSROOT)/etc/os-release
-	make SYSROOT=$(SYSROOT) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
-
-
-### UNUSED ###
+boot-tree: $(BUILDDIR)/boot loader kernel initramfs boot-spec dtb
 
 $(BUILDDIR)/boot:
 	mkdir -p $@
@@ -108,8 +80,6 @@ loader:
 else
 $(error Please set KERNEL_LOADER to either "grub" or "u-boot")
 endif
-
-### END UNUSED ###
 
 ### INSTALL ##################################################################
 
