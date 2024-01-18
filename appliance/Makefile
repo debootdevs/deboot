@@ -2,6 +2,13 @@ all: build/squashfs.img
 
 export OS_BANNER = banner/swarmos.ans
 
+SYSROOT = $(BUILDDIR)/sysroot
+
+kiwi:
+	make SYSROOT=$(SYSROOT) --directory kiwi 
+
+$(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release
+
 build/squashfs.img:
 	. ./mkroot.sh && build_root
 
