@@ -25,12 +25,12 @@ KERNEL_LOADER ?= grub
 
 SYSROOT = $(BUILDDIR)/sysroot
 
-appliance: $(SYSROOT)/squashfs.img
+appliance: $(BUILDDIR)/squashfs.img
 
 $(SYSROOT)/etc/os-release:
-	make SYSROOT=$(SYSROOT) --directory appliance
+	make SYSROOT=$(SYSROOT) --directory appliance kiwi
 
-$(SYSROOT)/squashfs.img: $(SYSROOT)/etc/os-release
+$(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release
 	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
 
 ### BUILD-ENV ################################################################
