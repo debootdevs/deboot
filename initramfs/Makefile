@@ -1,4 +1,4 @@
-KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
+KVERSION = $(shell find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 ARCH = $(shell uname -m)
 
 ifeq ($(BEE_VERSION),)
@@ -12,6 +12,7 @@ swarm-initrd: /usr/bin/bee $(dracutbasedir)/dracut-util
 		-a "bzz network-legacy drm" \
 		-o iscsi \
 		--no-hostonly --no-hostonly-cmdline \
+		--sysroot $(SYSROOT) \
 		-f $@ $(KVERSION)
 
 $(dracutbasedir)/dracut-util: /usr/bin/gcc
