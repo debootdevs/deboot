@@ -21,6 +21,24 @@ KERNEL_LOADER ?= grub
 
 .PHONY: extlinux grub install install-grub clean initramfs boot-tree
 
+### BUILD-ENV ################################################################
+
+build-env: env.json
+
+env.json: Containerfile
+	podman build . -t deboot-build
+	podman image inspect deboot-build > $@
+
+#init-env: env.json
+#	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
+
+init-env: env.json
+	podman run --rm -v ./:/deboot -v /boot:/boot:ro -v /dev:/dev -ti deboot-build bash
+
+rm-env:
+	-podman rmi deboot-build
+	-rm env.json
+
 ### SYSROOT ##################################################################
 
 SYSROOT = $(BUILDDIR)/sysroot
@@ -33,41 +51,30 @@ $(SYSROOT)/etc/os-release:
 $(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release
 	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
 
-### BUILD-ENV ################################################################
-
-build-env: env.json
-
-env.json: Containerfile
-	podman build . -t deboot-build
-	podman image inspect deboot-build > $@
-
-init-env: env.json
-	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
-
-rm-env:
-	-podman rmi deboot-build
-	-rm env.json
+$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release
+	find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
 
 ### BOOT-TREE ################################################################
 
-boot-tree: $(SYSROOT)/etc/os-release
-	make SYSROOT=$(SYSROOT) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
-
-
-### UNUSED ###
+boot-tree: $(BUILDDIR)/kver $(BUILDDIR)/boot appliance kernel initramfs loader boot-spec dtb
+#	make BUILDDIR=$(BUILDDIR) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
 
 $(BUILDDIR)/boot:
 	mkdir -p $@
 
+### KERNEL ###################################################################
+
 kernel: $(BUILDDIR)/boot/vmlinuz
 
-$(BUILDDIR)/boot/vmlinuz: $(KERNEL) $(BUILDDIR)/boot
-	cp $< $@
+$(BUILDDIR)/boot/vmlinuz: $(SYSROOT)/etc/os-release $(BUILDDIR)/boot
+	cp $(SYSROOT)/lib/modules/$$(cat $(BUILDDIR)/kver)/vmlinuz $@
+
+### INITRAMFS ################################################################
 
 initramfs: $(BUILDDIR)/boot/initramfs
 
 $(BUILDDIR)/boot/initramfs: initramfs/swarm-initrd $(BUILDDIR)/boot
-	cp initramfs/swarm-initrd $@
+	cp $< $@
 
 ###### loader #######
 ######### GRUB #########
@@ -75,13 +82,15 @@ ifeq ($(KERNEL_LOADER), grub)
 # Assume Fedora-style GRUB with support for Bootloader Spec files
 boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/grub2/grub.cfg
 
+# BLS file unused for now
+
 $(BUILDDIR)/boot/loader/entries/swarm.conf:
 	mkdir -p $(@D)
 	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2 > $@
 
 $(BUILDDIR)/boot/grub2/grub.cfg:
 	mkdir -p $(@D)
-	grub2-mkconfig -o $@
+	jinja2 loader/grub/grub.cfg.j2 deboot.yaml > $@
 
 dtb: # not sure if this is needed for GRUB boot?
 

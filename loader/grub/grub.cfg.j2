@@ -1,0 +1,11 @@
+{% for entry in entries %}
+menuentry {{entry.desc}} --class swarm --class deboot --id {{entry.id}} {
+  search.fs_label DEBOOT root
+  linux /boot/vmlinuz root=live:bzz://{{entry.id}} console=ttyS0 console=tty1 panic=1
+  initrd /boot/swarm-initrd
+}
+{% endfor %}
+
+menuentry "UEFI Firmware setup" {
+  fwsetup
+}
