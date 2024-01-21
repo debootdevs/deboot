@@ -30,10 +30,12 @@
 	<source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f38&amp;arch={{arch}}"/>
     </repository>
     <packages type="image">
+        <package name="kernel"/>
         <package name="selinux-policy-targeted"/>
         <package name="iproute"/>
         <package name="iputils"/>
         <package name="systemd-networkd"/>
+        <package name="systemd-resolved"/>
         <package name="neovim"/>
         <package name="tzdata"/>
     </packages>
