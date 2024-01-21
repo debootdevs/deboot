@@ -120,7 +120,7 @@ endif
 
 ### END UNUSED ###
 
-### INSTALL ##################################################################
+### INSTALL INTO BOOT.IMG ####################################################
 
 install: $(BUILDDIR)/boot.part
 	$(eval TMP := $(shell mktemp -d))
@@ -134,9 +134,11 @@ ifeq ($(KERNEL_LOADER), u-boot)
 $(BUILDDIR)/boot.part: 
 	loader/cp-image.sh $(BOOT_DEV) $(BUILDDIR)/boot.img $@
 else
+# Create loopback device backed on boot.img, devnode for p1, symlink to devnode
 $(BUILDDIR)/boot.part: | $(BUILDDIR)/boot.img
 	loader/init-vfat.sh $@ $|
 
+# Allocate space and create GPT partition table with 1 partition
 $(BUILDDIR)/boot.img:
 	loader/init-image.sh $@
 endif
