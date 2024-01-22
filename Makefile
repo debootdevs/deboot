@@ -73,8 +73,11 @@ $(BUILDDIR)/boot/vmlinuz: $(SYSROOT)/etc/os-release $(BUILDDIR)/boot
 
 initramfs: $(BUILDDIR)/boot/initramfs
 
-$(BUILDDIR)/boot/initramfs: initramfs/swarm-initrd $(BUILDDIR)/boot
+$(BUILDDIR)/boot/initramfs: $(BUILDDIR)/swarm-initrd $(BUILDDIR)/boot
 	cp $< $@
+
+$(BUILDDIR)/swarm-initrd:
+	make BEE_VERSION=$(BEE_VERSION) BUILDDIR=$(BUILDDIR) SYSROOT=$(SYSROOT) --directory ./initramfs swarm-initrd
 
 ###### loader #######
 ######### GRUB #########
@@ -143,14 +146,9 @@ endif
 
 ### OLD ######################################################################
 
-$(BUILDDIR)/grub.img: initramfs/swarm-initrd
-	grub/init-image.sh
-
 $(BUILDDIR)/esp:
 	make BUILDDIR=$(BUILDDIR) --directory grub
 
-initramfs/swarm-initrd:
-	make BEE_VERSION=$(BEE_VERSION) --directory ./initramfs swarm-initrd
 
 install-grub:
 	grub/mount-image.sh
