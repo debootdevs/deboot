@@ -33,7 +33,7 @@ env.json: Containerfile
 #	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
 
 init-env: env.json
-	podman run --rm -v ./:/deboot -v /boot:/boot:ro -v /dev:/dev -ti deboot-build bash
+	podman run --privileged --rm -v ./:/deboot -v /boot:/boot:ro -v /dev:/dev -ti deboot-build bash
 
 rm-env:
 	-podman rmi deboot-build
@@ -118,11 +118,9 @@ else
 $(error Please set KERNEL_LOADER to either "grub" or "u-boot")
 endif
 
-### END UNUSED ###
-
 ### INSTALL INTO BOOT.IMG ####################################################
 
-install: $(BUILDDIR)/boot.part
+install: $(BUILDDIR)/boot.part boot-tree
 	$(eval TMP := $(shell mktemp -d))
 	mount $< $(TMP)
 	rm -rf $(TMP)/*
