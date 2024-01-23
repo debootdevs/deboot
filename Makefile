@@ -46,7 +46,7 @@ $(BUILDDIR):
 
 SYSROOT = $(BUILDDIR)/sysroot
 
-appliance: $(BUILDDIR)/squashfs.img $(BUILDDIR)/boot/LiveOS/squashfs.img
+appliance: $(BUILDDIR)/boot/LiveOS/squashfs.img
 
 $(SYSROOT)/etc/os-release:
 	make SYSROOT=$(SYSROOT) --directory appliance kiwi
@@ -90,7 +90,7 @@ $(BUILDDIR)/swarm-initrd: $(BUILDDIR)
 ######### GRUB #########
 ifeq ($(KERNEL_LOADER), grub)
 # Assume Fedora-style GRUB with support for Bootloader Spec files
-boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/grub2/grub.cfg
+boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/EFI/fedora/grub.cfg
 
 # BLS file unused for now
 
@@ -98,7 +98,7 @@ $(BUILDDIR)/boot/loader/entries/swarm.conf:
 	mkdir -p $(@D)
 	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2 > $@
 
-$(BUILDDIR)/boot/grub2/grub.cfg:
+$(BUILDDIR)/boot/EFI/fedora/grub.cfg: 
 	mkdir -p $(@D)
 	jinja2 loader/grub/grub.cfg.j2 deboot.yaml > $@
 
