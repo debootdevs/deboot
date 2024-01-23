@@ -39,6 +39,9 @@ rm-env:
 	-podman rmi deboot-build
 	-rm env.json
 
+$(BUILDDIR):
+	mkdir -p $@
+
 ### SYSROOT ##################################################################
 
 SYSROOT = $(BUILDDIR)/sysroot
@@ -48,14 +51,14 @@ appliance: $(BUILDDIR)/squashfs.img $(BUILDDIR)/boot/LiveOS/squashfs.img
 $(SYSROOT)/etc/os-release:
 	make SYSROOT=$(SYSROOT) --directory appliance kiwi
 
-$(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release
+$(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release $(BUILDDIR)
 	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
 
 $(BUILDDIR)/boot/LiveOS/squashfs.img: $(BUILDDIR)/squashfs.img
 	mkdir -p $(BUILDDIR)/boot/LiveOS
 	cp $< $@
 
-$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release
+$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release $(BUILDDIR)
 	find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
 
 ### BOOT-TREE ################################################################
@@ -63,7 +66,7 @@ $(BUILDDIR)/kver: $(SYSROOT)/etc/os-release
 boot-tree: $(BUILDDIR)/kver $(BUILDDIR)/boot appliance kernel initramfs loader boot-spec dtb
 #	make BUILDDIR=$(BUILDDIR) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
 
-$(BUILDDIR)/boot:
+$(BUILDDIR)/boot: $(BUILDDIR)
 	mkdir -p $@
 
 ### KERNEL ###################################################################
@@ -80,7 +83,7 @@ initramfs: $(BUILDDIR)/boot/initramfs
 $(BUILDDIR)/boot/initramfs: $(BUILDDIR)/swarm-initrd $(BUILDDIR)/boot
 	cp $< $@
 
-$(BUILDDIR)/swarm-initrd:
+$(BUILDDIR)/swarm-initrd: $(BUILDDIR)
 	make BEE_VERSION=$(BEE_VERSION) BUILDDIR=$(BUILDDIR) SYSROOT=$(SYSROOT) --directory ./initramfs swarm-initrd
 
 ###### loader #######
@@ -144,25 +147,11 @@ $(BUILDDIR)/boot.part: | $(BUILDDIR)/boot.img
 	loader/init-vfat.sh $@ $|
 
 # Allocate space and create GPT partition table with 1 partition
-$(BUILDDIR)/boot.img:
+$(BUILDDIR)/boot.img: $(BUILDDIR)
 	loader/init-image.sh $@
 endif
 
-### OLD ######################################################################
-
-$(BUILDDIR)/esp:
-	make BUILDDIR=$(BUILDDIR) --directory grub
-
-
-install-grub:
-	grub/mount-image.sh
-	cp -r $(BUILDDIR)/esp -T $(BUILDDIR)/mnt
-	# grub/unmount-image.sh
-	umount $(BUILDDIR)/mnt
-
-test-grub:
-	podman run --runtime crun -v /dev:/dev $(CONTAINER_OPTS) $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
-
 clean:
-	-rm initramfs/swarm-initrd
+	-rm appliance/kiwi/config.xml
 	-rm -rf $(BUILDDIR)/*
+
