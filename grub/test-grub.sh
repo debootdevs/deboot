@@ -15,7 +15,8 @@ fi
 
 mac=52:54:00:12:34:56
 
-dnf install qemu-system-$(uname -m)
+ARCH=$(uname -m)
+dnf install -y qemu-system-${ARCH%%_64}
 
 qemu-system-$(uname -m) -smp 2 -m 1024M -nographic -enable-kvm -no-reboot \
 	-bios "$BIOS" -drive file="$GRUB" \

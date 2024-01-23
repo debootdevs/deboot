@@ -15,6 +15,8 @@ $(BUILDDIR)/swarm-initrd: $(SYSROOT)/usr/bin/bee $(dracutbasedir)/dracut-util
 	-ln -s $$(pwd)/$(dracutbasedir) $(SYSROOT)/$$(pwd)/$(dracutbasedir)
 	$(dracutbasedir)/dracut.sh -l \
 		-a "bzz network-legacy drm" \
+		-I /usr/lib64/systemd/libsystemd-core-253.14-1.fc38.so \
+		-I /usr/lib64/systemd/libsystemd-shared-253.14-1.fc38.so \
 		-o iscsi \
 		--no-hostonly --no-hostonly-cmdline \
 		--sysroot $(SYSROOT) \

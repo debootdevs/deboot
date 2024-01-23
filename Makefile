@@ -33,7 +33,7 @@ env.json: Containerfile
 #	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
 
 init-env: env.json
-	podman run --privileged --rm -v ./:/deboot -v /boot:/boot:ro -v /dev:/dev -ti deboot-build bash
+	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -ti deboot-build bash
 
 rm-env:
 	-podman rmi deboot-build
@@ -43,13 +43,17 @@ rm-env:
 
 SYSROOT = $(BUILDDIR)/sysroot
 
-appliance: $(BUILDDIR)/squashfs.img
+appliance: $(BUILDDIR)/squashfs.img $(BUILDDIR)/boot/LiveOS/squashfs.img
 
 $(SYSROOT)/etc/os-release:
 	make SYSROOT=$(SYSROOT) --directory appliance kiwi
 
 $(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release
 	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
+
+$(BUILDDIR)/boot/LiveOS/squashfs.img: $(BUILDDIR)/squashfs.img
+	mkdir -p $(BUILDDIR)/boot/LiveOS
+	cp $< $@
 
 $(BUILDDIR)/kver: $(SYSROOT)/etc/os-release
 	find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
@@ -97,10 +101,10 @@ $(BUILDDIR)/boot/grub2/grub.cfg:
 
 dtb: # not sure if this is needed for GRUB boot?
 
-loader: $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
+loader: $(BUILDDIR)/boot/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
 
-$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: $(PREFIX)/boot/efi
-	cp -r $< -T $(BUILDDIR)/efi
+$(BUILDDIR)/boot/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: /boot/efi/EFI $(BUILDDIR)/boot
+	cp -r $< $(BUILDDIR)/boot
 
 ######### U-BOOT #########
 else ifeq ($(KERNEL_LOADER), u-boot)
