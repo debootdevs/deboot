@@ -1,6 +1,7 @@
 all: $(SYSROOT)/etc/os-release
 
-KIWI = $(shell which kiwi || which kiwi-ng)
+KIWI = kiwi
+#KIWI = $(shell which kiwi || which kiwi-ng)
 
 ifeq ($(KIWI), )
 $(error Could not find kiwi. Please set Make variable KIWI to path to kiwi binary.)

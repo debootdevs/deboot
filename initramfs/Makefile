@@ -24,11 +24,13 @@ $(dracutbasedir)/dracut-util: /usr/bin/gcc
 	sh -c "cd $(dracutbasedir) && ./configure"
 	make enable_documentation=no -C $(dracutbasedir)
 
+
+# would not be necessary if Swarm RPM repo were kept up to date
+
 install-bee: $(SYSROOT)/usr/bin/bee
 
-$(SYSROOT)/usr/bin/bee: bee-$(BEE_VERSION).$(ARCH).rpm
-	-rpm -i bee-$(BEE_VERSION).$(ARCH).rpm
-	-cp /usr/bin/bee $@
+$(SYSROOT)/usr/bin/bee: $(SYSROOT)/bee-$(BEE_VERSION).$(ARCH).rpm
+	-chroot $(SYSROOT) rpm -i bee-$(BEE_VERSION).$(ARCH).rpm
 
-bee-$(BEE_VERSION).$(ARCH).rpm:
-	wget -nc https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee-$(BEE_VERSION).$(ARCH).rpm
+$(SYSROOT)/bee-$(BEE_VERSION).$(ARCH).rpm:
+	curl -sSL https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee-$(BEE_VERSION).$(ARCH).rpm -o $@
