@@ -10,5 +10,5 @@ BOOT_IMG=$1
 
 # main thread
 # fallocate -l 255m $BOOT_IMG # not supported in WSL
-dd if=/dev/zero of=$BOOT_IMG bs=1M count=255
+dd if=/dev/zero of=$BOOT_IMG bs=1M count=512
 sgdisk --new=1:0:0 -t 1:ef00 $BOOT_IMG
