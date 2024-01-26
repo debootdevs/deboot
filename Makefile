@@ -158,4 +158,4 @@ clean:
 ### DOCS #######################################################
 
 docs:
-	make DOCSDIR=$$(pwd)/docs --directory mkdocs
+	make --directory mkdocs

@@ -12,7 +12,7 @@ Size:      10-100MB
 ```
 
 As an archive, an initramfs is a concatenated string of cpio archives, some or all of which may be gzip-compressed. 
-An initramfs can be unpacked using the `cpio` utility, or inspected at a higher level using `lsinitrd`.
+An initramfs can be unpacked using the `cpio` utility, or inspected at a higher level using `lsnitrd`.
 The `dracut-cpio` and `skipcpio` utilities are adapted specifically to unpack the cpio archives produced by dracut.
 
 ## Building the initramfs
