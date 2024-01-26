@@ -28,7 +28,7 @@ You'll need a KVM-ready Linux OS. Your Linux OS is KVM-ready if a file exists at
 
 1. Install podman, slirp4netns, uidmap (if Debian)
 
-2. Clone this repo using `git --recurse-submodules -b aarch64`.
+2. Clone this repo using `git --recurse-submodules`.
 
 3. Change to the repository's home directory. Run
    ```

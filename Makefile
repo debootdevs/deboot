@@ -21,18 +21,6 @@ KERNEL_LOADER ?= grub
 
 .PHONY: extlinux grub install install-grub clean initramfs boot-tree
 
-### SYSROOT ##################################################################
-
-SYSROOT = $(BUILDDIR)/sysroot
-
-appliance: $(SYSROOT)/squashfs.img
-
-$(SYSROOT)/etc/os-release:
-	make SYSROOT=$(SYSROOT) --directory appliance
-
-$(SYSROOT)/squashfs.img: $(SYSROOT)/etc/os-release
-	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
-
 ### BUILD-ENV ################################################################
 
 build-env: env.json
@@ -41,54 +29,85 @@ env.json: Containerfile
 	podman build . -t deboot-build
 	podman image inspect deboot-build > $@
 
+#init-env: env.json
+#	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
+
 init-env: env.json
-	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
+	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -ti deboot-build bash
 
 rm-env:
 	-podman rmi deboot-build
 	-rm env.json
 
+$(BUILDDIR):
+	mkdir -p $@
+
+### SYSROOT ##################################################################
+
+SYSROOT = $(BUILDDIR)/sysroot
+
+appliance: $(BUILDDIR)/boot/LiveOS/squashfs.img
+
+$(SYSROOT)/etc/os-release:
+	make SYSROOT=$(SYSROOT) --directory appliance kiwi
+
+$(BUILDDIR)/squashfs.img: $(SYSROOT)/etc/os-release $(BUILDDIR)
+	mksquashfs $(SYSROOT) $@ -comp zstd -Xcompression-level 19
+
+$(BUILDDIR)/boot/LiveOS/squashfs.img: $(BUILDDIR)/squashfs.img
+	mkdir -p $(BUILDDIR)/boot/LiveOS
+	cp $< $@
+
+$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release $(BUILDDIR)
+	find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
+
 ### BOOT-TREE ################################################################
 
-boot-tree: $(SYSROOT)/etc/os-release
-	make SYSROOT=$(SYSROOT) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
+boot-tree: $(BUILDDIR)/kver $(BUILDDIR)/boot appliance kernel initramfs loader boot-spec dtb
+#	make BUILDDIR=$(BUILDDIR) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
 
-
-### UNUSED ###
-
-$(BUILDDIR)/boot:
+$(BUILDDIR)/boot: $(BUILDDIR)
 	mkdir -p $@
+
+### KERNEL ###################################################################
 
 kernel: $(BUILDDIR)/boot/vmlinuz
 
-$(BUILDDIR)/boot/vmlinuz: $(KERNEL) $(BUILDDIR)/boot
-	cp $< $@
+$(BUILDDIR)/boot/vmlinuz: $(SYSROOT)/etc/os-release $(BUILDDIR)/boot
+	cp $(SYSROOT)/lib/modules/$$(cat $(BUILDDIR)/kver)/vmlinuz $@
+
+### INITRAMFS ################################################################
 
 initramfs: $(BUILDDIR)/boot/initramfs
 
-$(BUILDDIR)/boot/initramfs: initramfs/swarm-initrd $(BUILDDIR)/boot
-	cp initramfs/swarm-initrd $@
+$(BUILDDIR)/boot/initramfs: $(BUILDDIR)/swarm-initrd $(BUILDDIR)/boot
+	cp $< $@
+
+$(BUILDDIR)/swarm-initrd: $(BUILDDIR)
+	make BEE_VERSION=$(BEE_VERSION) BUILDDIR=$(BUILDDIR) SYSROOT=$(SYSROOT) --directory ./initramfs swarm-initrd
 
 ###### loader #######
 ######### GRUB #########
 ifeq ($(KERNEL_LOADER), grub)
 # Assume Fedora-style GRUB with support for Bootloader Spec files
-boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/grub2/grub.cfg
+boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/EFI/fedora/grub.cfg
+
+# BLS file unused for now
 
 $(BUILDDIR)/boot/loader/entries/swarm.conf:
 	mkdir -p $(@D)
 	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/grub/bootloaderspec.conf.j2 > $@
 
-$(BUILDDIR)/boot/grub2/grub.cfg:
+$(BUILDDIR)/boot/EFI/fedora/grub.cfg: 
 	mkdir -p $(@D)
-	grub2-mkconfig -o $@
+	jinja2 loader/grub/grub.cfg.j2 deboot.yaml > $@
 
 dtb: # not sure if this is needed for GRUB boot?
 
-loader: $(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
+loader: $(BUILDDIR)/boot/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
 
-$(BUILDDIR)/efi/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: $(PREFIX)/boot/efi
-	cp -r $< -T $(BUILDDIR)/efi
+$(BUILDDIR)/boot/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: /boot/efi/EFI $(BUILDDIR)/boot
+	cp -r $< $(BUILDDIR)/boot
 
 ######### U-BOOT #########
 else ifeq ($(KERNEL_LOADER), u-boot)
@@ -109,11 +128,9 @@ else
 $(error Please set KERNEL_LOADER to either "grub" or "u-boot")
 endif
 
-### END UNUSED ###
+### INSTALL INTO BOOT.IMG ####################################################
 
-### INSTALL ##################################################################
-
-install: $(BUILDDIR)/boot.part
+install: $(BUILDDIR)/boot.part boot-tree
 	$(eval TMP := $(shell mktemp -d))
 	mount $< $(TMP)
 	rm -rf $(TMP)/*
@@ -125,33 +142,16 @@ ifeq ($(KERNEL_LOADER), u-boot)
 $(BUILDDIR)/boot.part: 
 	loader/cp-image.sh $(BOOT_DEV) $(BUILDDIR)/boot.img $@
 else
+# Create loopback device backed on boot.img, devnode for p1, symlink to devnode
 $(BUILDDIR)/boot.part: | $(BUILDDIR)/boot.img
 	loader/init-vfat.sh $@ $|
 
-$(BUILDDIR)/boot.img:
+# Allocate space and create GPT partition table with 1 partition
+$(BUILDDIR)/boot.img: $(BUILDDIR)
 	loader/init-image.sh $@
 endif
 
-### OLD ######################################################################
-
-$(BUILDDIR)/grub.img: initramfs/swarm-initrd
-	grub/init-image.sh
-
-$(BUILDDIR)/esp:
-	make BUILDDIR=$(BUILDDIR) --directory grub
-
-initramfs/swarm-initrd:
-	make BEE_VERSION=$(BEE_VERSION) --directory ./initramfs swarm-initrd
-
-install-grub:
-	grub/mount-image.sh
-	cp -r $(BUILDDIR)/esp -T $(BUILDDIR)/mnt
-	# grub/unmount-image.sh
-	umount $(BUILDDIR)/mnt
-
-test-grub:
-	podman run --runtime crun -v /dev:/dev $(CONTAINER_OPTS) $(CONTAINER_IMAGE) sh -c 'cd /deboot && grub/test-grub.sh'
-
 clean:
-	-rm initramfs/swarm-initrd
+	-rm appliance/kiwi/config.xml
 	-rm -rf $(BUILDDIR)/*
+

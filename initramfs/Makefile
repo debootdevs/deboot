@@ -6,10 +6,17 @@ $(error Please set BEE_VERSION.)
 endif
 
 dracutbasedir = dracut
+BUILDDIR ?= .
 
-swarm-initrd: /usr/bin/bee $(dracutbasedir)/dracut-util
+swarm-initrd: $(BUILDDIR)/swarm-initrd
+
+$(BUILDDIR)/swarm-initrd: $(SYSROOT)/usr/bin/bee $(dracutbasedir)/dracut-util
+	mkdir -p $(SYSROOT)/$$(pwd)
+	-ln -s $$(pwd)/$(dracutbasedir) $(SYSROOT)/$$(pwd)/$(dracutbasedir)
 	$(dracutbasedir)/dracut.sh -l \
 		-a "bzz network-legacy drm" \
+		-I /usr/lib64/systemd/libsystemd-core-253.14-1.fc38.so \
+		-I /usr/lib64/systemd/libsystemd-shared-253.14-1.fc38.so \
 		-o iscsi \
 		--no-hostonly --no-hostonly-cmdline \
 		--sysroot $(SYSROOT) \
@@ -19,10 +26,13 @@ $(dracutbasedir)/dracut-util: /usr/bin/gcc
 	sh -c "cd $(dracutbasedir) && ./configure"
 	make enable_documentation=no -C $(dracutbasedir)
 
-install-bee: /usr/bin/bee
 
-/usr/bin/bee: bee-$(BEE_VERSION).$(ARCH).rpm
-	-rpm -i bee-$(BEE_VERSION).$(ARCH).rpm
+# would not be necessary if Swarm RPM repo were kept up to date
 
-bee-$(BEE_VERSION).$(ARCH).rpm:
-	wget -nc https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee-$(BEE_VERSION).$(ARCH).rpm
+install-bee: $(SYSROOT)/usr/bin/bee
+
+$(SYSROOT)/usr/bin/bee: $(SYSROOT)/bee-$(BEE_VERSION).$(ARCH).rpm
+	-chroot $(SYSROOT) rpm -i bee-$(BEE_VERSION).$(ARCH).rpm
+
+$(SYSROOT)/bee-$(BEE_VERSION).$(ARCH).rpm:
+	curl -sSL https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee-$(BEE_VERSION).$(ARCH).rpm -o $@

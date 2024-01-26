@@ -1,4 +1,5 @@
-BUILDDIR = $(abspath ./build)
+BUILDDIR ?= $(abspath ./build)
+SYSROOT = $(BUILDDIR)/sysroot
 
 CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --cap-add=SYS_PTRACE
 CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
