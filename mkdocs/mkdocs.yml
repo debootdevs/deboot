@@ -1,0 +1,18 @@
+site_name: DeBoot
+site_url: https://debootdevs.github.io/deboot/
+nav:
+  - Overview: overview.md
+  - How booting works: booting.md
+  - How DeBoot works: deboot.md
+  - Boot Stages: 
+    - Metal: metal.md
+    - UEFI: uefi.md
+    - GRUB: grub.md
+    - U-Boot: u-boot.md
+    - Initramfs: initramfs.md
+  - Using DeBoot:
+    - Building DeBoot: build.md
+    - DeBooting: debooting.md
+    - Appliances: appliance.md
+    - Gotchas: gotcha.md
+theme: readthedocs

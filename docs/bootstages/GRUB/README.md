@@ -1,1 +1,0 @@
-GRUB is a file.

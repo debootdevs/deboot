@@ -155,3 +155,7 @@ clean:
 	-rm appliance/kiwi/config.xml
 	-rm -rf $(BUILDDIR)/*
 
+### DOCS #######################################################
+
+docs:
+	make DOCSDIR=$$(pwd)/docs --directory mkdocs
