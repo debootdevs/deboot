@@ -9,4 +9,8 @@ Generally, boot stages are designed to be *ephemeral* in the sense that they lea
 
 The DeBoot POC is focussed on the task of booting Linux. Linux is usually distributed in a special gzip-compressed ELF executable format called a [b]zImage with the filename `vmlinuz`. There are various programs that can load this format; the most widely used are GRUB (for x86 systems) and U-Boot (for ARM systems). Linux can also be bundled into an EFI executable using the [EFI boot stub](https://docs.kernel.org/admin-guide/efi-stub.html) format to be loaded by UEFI (or [EBBR](https://arm-software.github.io/ebbr/)) firmware.
 
-* We often apply the name *appliance* to the userspace images we built. In this context, an appliance is a "single-purpose OS." Of course, there is nothing about the build process that forces our images to be "single-purpose."
+## Userspace
+
+The final stage of a Linux boot comprises mounting and switching to the OS root filesystem, or *userspace*. In [systemd-based initramfs](https://systemd.io/INITRD_INTERFACE/), the switch uses the `systemctl switch-root` command.
+
+We often apply the name *appliance* to the userspace images we built. In this context, an appliance is a "single-purpose OS." Of course, there is nothing about the build process that actually forces our images to be "single-purpose."
