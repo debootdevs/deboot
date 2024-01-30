@@ -1,6 +1,6 @@
 # Metal
 
-When a computer is first powered on, raw machine code is loaded into the CPU instruction cache from some fixed offset in a non-removable component (e.g. ROM) on the mainboard and executed. This *first-stage bootloader* is typically very small — on the order of a few hundred bytes. Its only job is to initialize a storage device containing the second stage bootloader and enough of main memory to load it.
+When a computer is first powered on, raw machine code is loaded into the CPU instruction cache from some fixed offset in a non-removable component (e.g. ROM) on the mainboard and executed. This *first-stage bootloader* is typically very small — on the order of a few hundred bytes. Its only job is to initialize a local storage device containing the second stage bootloader and enough of main memory to load it.
 
 ## Implementations
 
