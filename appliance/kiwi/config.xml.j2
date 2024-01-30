@@ -24,13 +24,13 @@
         <user password="$6$KYB00jA.jgaG6g7q$h59VHRQbwk9vnHzwyu53ZEUfUVKf.Veljn269vnVxCcqFCuOytvuA/Ys20puoOrbWACSmc5mLvjr9yztrcKmP." home="/root" name="root" groups="root"/>
     </users>
     <repository type="rpm-md" alias="Fedora38" sourcetype="metalink">
-	<source path="https://mirrors.fedoraproject.org/metalink?repo=fedora-38&amp;arch={{arch}}"/>
+	<source path="https://mirrors.fedoraproject.org/metalink?repo=fedora-39&amp;arch={{arch}}"/>
     </repository>
     <repository type="rpm-md" alias="ethersphere" imageinclude="true">
 	<source path="https://repos.ethswarm.org/rpm"/>
     </repository>
     <repository type="rpm-md" alias="Fedora38-updates" sourcetype="metalink">
-	<source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f38&amp;arch={{arch}}"/>
+	<source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f39&amp;arch={{arch}}"/>
     </repository>
     <packages type="image">
         <package name="kernel"/>
@@ -45,10 +45,10 @@
         <package name="squashfs-tools"/>
         <package name="tar"/>
         <package name="dhclient"/>
-        <package name="libnl3"/>
         <package name="gcc"/>
         <package name="pkg-config"/>
-        <package name="kmod-libs"/>
+        <package name="kmod-devel"/>
+        <package name="squashfs-tools"/>
     </packages>
     <packages type="bootstrap">
         <package name="glibc-minimal-langpack"/>
