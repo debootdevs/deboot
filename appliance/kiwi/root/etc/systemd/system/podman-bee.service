@@ -1,6 +1,6 @@
 [Unit]
 Description=EthSwarm bee node
-After=network.target
+After=network-online.target
 
 [Service]
 ExecStart=podman run -p 1633:1633 -p 1634:1634 -p 1635:1635 \
