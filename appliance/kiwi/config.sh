@@ -16,7 +16,7 @@ echo "Configure image: [$kiwi_iname]..."
 baseInsertService dbus-broker
 baseInsertService systemd-networkd
 baseInsertService systemd-resolved
-baseInsertService podman-bee
+baseInsertService podman-nimbus-fluffy
 
 #======================================
 # Setup default target, multi-user
