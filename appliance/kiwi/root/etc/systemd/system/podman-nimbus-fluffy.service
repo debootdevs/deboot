@@ -1,0 +1,11 @@
+[Unit]
+Description=Nimbus Fluffy node on The Portal Network (Ethereum L1)
+After=network-online.target
+
+[Service]
+ExecStart=podman run -p 8545:8545 docker.io/statusim/nimbus-fluffy:amd64-master-latest --rpc --rpc-address=0.0.0.0
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
