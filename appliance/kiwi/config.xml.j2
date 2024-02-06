@@ -4,7 +4,7 @@
     <description type="system">
         <author>Andrew W. Macpherson</author>
         <contact>mail@awmacpherson.com</contact>
-        <specification>Fedora 38 Appliance</specification>
+        <specification>Fedora 39 Appliance</specification>
     </description>
     <profiles>
         <profile name="Live" description="Live image"/>
@@ -23,13 +23,13 @@
     <users>
         <user password="$6$KYB00jA.jgaG6g7q$h59VHRQbwk9vnHzwyu53ZEUfUVKf.Veljn269vnVxCcqFCuOytvuA/Ys20puoOrbWACSmc5mLvjr9yztrcKmP." home="/root" name="root" groups="root"/>
     </users>
-    <repository type="rpm-md" alias="Fedora38" sourcetype="metalink">
+    <repository type="rpm-md" alias="Fedora39" sourcetype="metalink">
 	<source path="https://mirrors.fedoraproject.org/metalink?repo=fedora-39&amp;arch={{arch}}"/>
     </repository>
     <repository type="rpm-md" alias="ethersphere" imageinclude="true">
 	<source path="https://repos.ethswarm.org/rpm"/>
     </repository>
-    <repository type="rpm-md" alias="Fedora38-updates" sourcetype="metalink">
+    <repository type="rpm-md" alias="Fedora39-updates" sourcetype="metalink">
 	<source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f39&amp;arch={{arch}}"/>
     </repository>
     <packages type="image">
