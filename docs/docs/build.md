@@ -2,6 +2,8 @@
 
 ## Quickstart
 
+Requires `podman`, `git`, `make`, `slirp4netns`, `uidmap` (for Debian distributions).
+
 Starting from the repo root, run the following commands:
 
 ```sh
