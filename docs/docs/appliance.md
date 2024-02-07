@@ -11,7 +11,9 @@ To build an appliance using the DeBoot build system, run `make appliance`. The o
 The configuration directory for this appliance build is located at `./appliance/kiwi/`.
 
 Edit the file `config.xml.j2` to:
+
 - customize the repositories and packages installed in the appliance
+
 - customize the users configured in the appliance
   - hashes for passwords can be generated using `openssl passwd -6`
   - default password for _root_ account is _deboot_.
