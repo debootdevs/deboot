@@ -19,6 +19,12 @@ where `$VERSION` is set to the latest version of the bee node as indicated by it
 
 To boot your constructed image from Swarm, retrieve its Swarm hash, add an entry to `./deboot.yaml`, then rebuild `boot.img`.
 
+To clean after yourself, run:
+
+```sh
+sudo make clean
+```
+
 ## Build container
 
 The DeBoot build is designed to run in a Fedora container using the same set of package repositories as the appliance to be built and booted. The choice of Fedora is convenient, but not necessary: with suitable modifications to package names and paths, one could adjust the build to construct appliances based on their preferred distro.
