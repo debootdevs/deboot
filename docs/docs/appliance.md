@@ -14,9 +14,7 @@ Edit the file `config.xml.j2` to:
 
 - customize the repositories and packages installed in the appliance
 
-- customize the users configured in the appliance
-  - hashes for passwords can be generated using `openssl passwd -6`
-  - default password for _root_ account is _deboot_.
+- customize the users configured in the appliance. Hashes for passwords can be generated using `openssl passwd -6`. Default password for _root_ account is _deboot_.
 
 Add files under `root/` for them to be included in the directory tree.
 
