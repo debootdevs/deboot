@@ -1,3 +1,5 @@
 entries:
   - id: "94a6153735b380e5e45f13e657912d7a3f07c0c570d2389d575cfb4d24055ee6"
-    desc: Bee Ultra Light Node (Swarm Network) v0.0.1
+    desc: Bee Ultra Light Node (Swarm Network) v0.1
+  - id: "b78752606742d738ea3094d089e1ac99f1e3dbfb0e1075f0e36c0db1bf0dbc50"
+    desc: Nimbus Fluffy Node (Ethereum - Portal Network) v0.1
