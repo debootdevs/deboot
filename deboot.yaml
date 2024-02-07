@@ -1,9 +1,3 @@
 entries:
-  - id: "0x628e277bae4fd88272dd751c852c22acaea9c147833ca0efe0d3a388a9aa8f8e"
-    desc: Ethereum infrastructure appliance (v0.1)
-  - id: "0xa89fdb4ea26157b48aef657b252d16f338be3e052738457546515f71a06a2b0f"
-    desc: Ethereum infrastructure appliance (v0.0)
-  - id: "0xe305446d58fb09914e3dd85977afc39df27caa41b58391cacb1b4b37497a48a9"
-    desc: Swarm OS (DeBoot splash-only fake edition).
-  - id: "0xebf3182e6919289a088f175628924a28148528061c6a240293b7bb6300525642"
-    desc: Fedora 37 w/ systemd networking
+  - id: "94a6153735b380e5e45f13e657912d7a3f07c0c570d2389d575cfb4d24055ee6"
+    desc: Bee Ultra Light Node (Swarm Network): v0.0.1
