@@ -9,7 +9,7 @@ menuentry "{{entry.desc}}" --class swarm --class deboot --id {{entry.id}} {
 {% endfor %}
 
 
-menuentry "Bee Ultra Light Node (Swarm Network) v0.1 (local boot)" --class swarm --class deboot --id 'local' {
+menuentry "(local boot) Bee Ultra Light Node (Swarm) v0.1" --class swarm --class deboot --id 'local' {
   search.fs_label DEBOOT root
   echo "Loading kernel..."
   linux /vmlinuz root=live:LABEL=DEBOOT console=ttyS0 console=tty1 panic=1
