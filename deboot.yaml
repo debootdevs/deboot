@@ -1,3 +1,9 @@
+name: deboot
+date: 2024-02-08
+version: 0.2.0
+loader: "bzz://a8e4c9406e3882e745566f907e6477d10cdc44ca6d3349563ccb6619bae22ce5"
+docs: "https://debootdevs.github.io/deboot/"
+source: "https://github.com/debootdevs/deboot/commit/abe1efa3b7f3240d77292e019552b02f95a29f2a"
 entries:
   - id: "94a6153735b380e5e45f13e657912d7a3f07c0c570d2389d575cfb4d24055ee6"
     desc: (network boot) Bee Ultra Light Node (Swarm) v0.1
