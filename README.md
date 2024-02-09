@@ -4,6 +4,10 @@ DeBoot is a project to research and implement techniques for booting OS images f
 
 If you want to get involved, join [the DeBoot chat on Matrix](https://matrix.to/#/#deboot:matrix.org) or [the DeBoot chat on Telegram](https://t.me/+hd2JXtyitYw0ZWE9).
 
+## Documentation
+
+Read all about the current technique in [the DeBoot documentation pages](https://debootdevs.github.io/deboot/).
+
 ## Milestone Timeline
 
 DeBoot reached the following milestones in its development:
