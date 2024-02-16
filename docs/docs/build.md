@@ -23,7 +23,7 @@ The main build artefacts are:
 ./build/squashfs.img  # compressed userspace which can be uploaded to Swarm and booted
 ```
 
-To boot your constructed image from Swarm, first you must store to Swarm, retrieve its Swarm hash, add an entry to `./deboot.yaml`, then rebuild `boot.img`.
+To boot your constructed image from Swarm, first you must store it to Swarm, retrieve its Swarm hash, add an entry to `./deboot.yaml`, then rebuild `boot.img`.
 
 Once done, you can move to the next section to start DeBooting.
 
