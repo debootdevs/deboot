@@ -1,6 +1,6 @@
 # Building the DeBoot POC
 
-These instructions are based on the [deboot repo on github](https://github.com/debootdevs/deboot/tree/main/docs).
+These instructions are based on the [deboot repo on github](https://github.com/debootdevs/deboot).
 
 ## Quickstart
 
