@@ -3,7 +3,7 @@ Description=mistserver running on podman
 After=network-online.target
 
 [Service]
-ExecStart=podman run -p 4242:4242 --shm-size=65536k docker.io/ddvtech/mistserver:latest
+ExecStart=podman run --network=host --shm-size=65536k docker.io/ddvtech/mistserver:latest
 Restart=always
 RestartSec=30
 
