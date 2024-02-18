@@ -8,4 +8,8 @@ entries:
   - id: "94a6153735b380e5e45f13e657912d7a3f07c0c570d2389d575cfb4d24055ee6"
     desc: (network boot) Bee Ultra Light Node (Swarm) v0.1
   - id: "b78752606742d738ea3094d089e1ac99f1e3dbfb0e1075f0e36c0db1bf0dbc50"
-    desc: (network boot) Nimbus Fluffy Node (Ethereum - Portal Network) v0.1
+    desc: (network boot) Nimbus Fluffy Node  (Ethereum - Portal Network) v0.1
+  - id: "9f4b2dec0ccdbef4e42923537acaf822f180780338d06628f269a8fe0aa9d7c8"
+    desc: (network boot) (--shm-size=65536k) DDVTech mistserver Appliance v0.1
+  - id: "bac60dafc4033e4aae18b1db7bd231428db45698da4244408e79f79bb029d448"
+    desc: (network boot) (--shm-size=7168m) DDVTech mistserver Appliance v0.2
