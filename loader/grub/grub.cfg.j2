@@ -4,7 +4,6 @@ menuentry "{{entry.desc}}" --class swarm --class deboot --id {{entry.id}} {
   echo "Loading kernel..."
   linux /vmlinuz root=live:bzz://{{entry.id}} console=ttyS0 console=tty1 panic=1
   echo "Loading initramfs..."
-  echo "Loading DeBoot..."
   initrd /initramfs
 }
 {% endfor %}
