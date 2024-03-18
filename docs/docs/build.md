@@ -6,7 +6,13 @@ These instructions are based on the [deboot repo on github](https://github.com/d
 
 Requires `podman`, `git`, `make`, `slirp4netns`, `uidmap` (for Debian distributions).
 
-Clone the repo with the `--recurse-submodules` flag. Then starting from the repo root, run the following commands:
+Clone the repo with the `--recurse-submodules` flag, e.g. with:
+
+```sh
+git clone https://github.com/debootdevs/deboot.git --recurse-submodules
+```
+
+Then starting from the repo root, run the following commands:
 
 ```sh
 sudo make init-env
