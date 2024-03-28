@@ -1,10 +1,18 @@
 # Building the DeBoot POC
 
+These instructions are based on the [deboot repo on github](https://github.com/debootdevs/deboot).
+
 ## Quickstart
 
 Requires `podman`, `git`, `make`, `slirp4netns`, `uidmap` (for Debian distributions).
 
-Starting from the repo root, run the following commands:
+Clone the repo with the `--recurse-submodules` flag, e.g. with:
+
+```sh
+git clone https://github.com/debootdevs/deboot.git --recurse-submodules
+```
+
+Then starting from the repo root, run the following commands:
 
 ```sh
 sudo make init-env
@@ -12,14 +20,18 @@ cd /deboot
 make BEE_VERSION=$VERSION install
 ```
 
-where `$VERSION` is set to the latest version of the bee node as indicated by its git tag e.g. `VERSION=1.18.2`. The main build artefacts are:
+where `$VERSION` should be set to the latest version of the Swarm bee node as indicated by its git tag e.g. `VERSION=1.18.2`.
+
+The main build artefacts are:
 
 ```sh
 ./build/boot.img      # bootable image which may be flashed to a USB drive
 ./build/squashfs.img  # compressed userspace which can be uploaded to Swarm and booted
 ```
 
-To boot your constructed image from Swarm, retrieve its Swarm hash, add an entry to `./deboot.yaml`, then rebuild `boot.img`.
+To boot your constructed image from Swarm, first you must store it to Swarm, retrieve its Swarm hash, add an entry to `./deboot.yaml`, then rebuild `boot.img`.
+
+Once done, you can move to the next section to start DeBooting.
 
 To clean after yourself, run:
 

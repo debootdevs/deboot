@@ -1,0 +1,1 @@
+Unified Extensible Firmware Interface is a specification that defines the architecture of the platform firmware used for booting the computer hardware and its interface for interaction with the operating system.
