@@ -15,4 +15,5 @@ nav:
     - DeBooting: debooting.md
     - Appliances: appliance.md
     - Gotchas: gotcha.md
+  - Inspecting boot images: inspect.md
 theme: readthedocs
