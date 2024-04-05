@@ -22,7 +22,7 @@ Once you have seen the layout of the disk, it's time to look inside the partitio
 kpartx -va image.img
 ```
 
-If `kpartx`  is not available, its functionality can be replicated with `losetup` and `partx`.
+This command may need to be run as `sudo`. If `kpartx`  is not available, its functionality can be replicated with `losetup` and `partx`.
 
 ## Inside the partitions
 
