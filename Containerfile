@@ -1,5 +1,7 @@
-FROM deb.debian.org/debian
-RUN apt -y install gcc wget iproute dhclient # for installation in initramfs
-RUN apt -y install kernel systemd kmod-devel squashfs-tools # for appliances, initramfs
-RUN apt -y install kiwi-cli python3-jinja2-cli # for appliances
+FROM docker.io/library/debian
+RUN apt update
+RUN apt -y install make gcc wget iproute2 # for installation in initramfs
+RUN apt -y install systemd squashfs-tools # for appliances, initramfs
 RUN apt -y install python3-xmltodict # for converting between XML and JSON
+RUN apt -y install kiwi python3-jinja2 kmod net-tools fdisk
+# RUN apt -y dhclient kernel # currently fails, need to replace with something for debian
