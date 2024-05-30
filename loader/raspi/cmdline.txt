@@ -1,0 +1,1 @@
+console=tty0 console=ttyS1,115200 root=live:bzz://{{ hash }} net.ifnames=0 rootwait 

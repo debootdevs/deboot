@@ -1,7 +1,10 @@
 FROM docker.io/library/debian
 RUN apt update
 RUN apt -y install make gcc wget iproute2 # for installation in initramfs
-RUN apt -y install systemd squashfs-tools # for appliances, initramfs
-RUN apt -y install python3-xmltodict # for converting between XML and JSON
-RUN apt -y install kiwi python3-jinja2 kmod net-tools fdisk
-# RUN apt -y dhclient kernel # currently fails, need to replace with something for debian
+RUN apt -y install systemd squashfs-tools pkg-config libkmod-dev arping sysvinit-core # for appliances, initramfs
+RUN apt -y install pipx rsync curl
+RUN apt -y install kiwi kmod net-tools fdisk isc-dhcp-client
+RUN apt -y install $(apt-cache pkgnames linux-image | egrep 'linux-image-([0-9\.-]*)-amd64$' | tail -n 1)
+RUN pipx install jinja2-cli[yaml]
+ENV PATH=$PATH:/root/.local/bin
+# on Debian kernel package needs to know the kernel version number

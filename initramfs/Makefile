@@ -1,5 +1,8 @@
 KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 ARCH = $(shell uname -m)
+ifeq ($(ARCH),x86_64) # for bee .deb installations
+ARCH = amd64
+endif
 
 
 ifeq ($(BEE_VERSION),)
@@ -26,8 +29,12 @@ $(dracutbasedir)/dracut-util: /usr/bin/gcc
 
 install-bee: /usr/bin/bee
 
-/usr/bin/bee: bee-$(BEE_VERSION).$(ARCH).rpm
-	-rpm -i bee-$(BEE_VERSION).$(ARCH).rpm
+# DEBIAN
 
-bee-$(BEE_VERSION).$(ARCH).rpm:
-	curl -sSL https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee-$(BEE_VERSION).$(ARCH).rpm -o $@
+/usr/bin/bee: bee-$(BEE_VERSION).$(ARCH).deb
+	-dpkg -i bee-$(BEE_VERSION).$(ARCH).deb
+
+# NB. Bee package filename uses underscores for .deb and [-.] for .rpm. x86_64 is represented as amd64 for .deb
+
+bee-$(BEE_VERSION).$(ARCH).deb:
+	curl -sSL https://github.com/ethersphere/bee/releases/download/v$(BEE_VERSION)/bee_$(BEE_VERSION)_$(ARCH).deb -o $@

@@ -10,12 +10,16 @@ ifeq ($(ARCH), aarch64)
 SHORT_ARCH = AA64
 else ifeq ($(ARCH), x86_64)
 SHORT_ARCH = X64
+PKG_ARCH = amd64
 else
 $(error Sorry, only aarch64 and x86_64 architectures are supported at the moment)
 endif
 
-KVERSION ?= $(shell find $(PREFIX)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
-KERNEL ?= $(PREFIX)/boot/vmlinuz-$(KVERSION)
+OS_ID = $(shell (. /etc/os-release && echo $ID))
+
+PREFIX ?= /mnt/sysroot # optionally mount template image here
+KVERSION ?= $(shell find $(PREFIX)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit) # SHOULD NOT BE USED
+KERNEL ?= $(PREFIX)/boot/vmlinuz-$(KVERSION) # NOT USED
 NAME ?= Swarm Linux
 KERNEL_LOADER ?= grub
 
@@ -33,7 +37,7 @@ env.json: Containerfile
 #	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
 
 init-env: env.json
-	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -ti deboot-build bash
+	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -v $(PREFIX) -ti deboot-build bash
 
 rm-env:
 	-podman rmi deboot-build
@@ -58,8 +62,9 @@ $(BUILDDIR)/boot/LiveOS/squashfs.img: $(BUILDDIR)/squashfs.img
 	mkdir -p $(BUILDDIR)/boot/LiveOS
 	cp $< $@
 
-$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release $(BUILDDIR)
-	find $(SYSROOT)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
+$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release $(BUILDDIR) /lib/modules
+	find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
+
 
 ### BOOT-TREE ################################################################
 
@@ -73,8 +78,14 @@ $(BUILDDIR)/boot: $(BUILDDIR)
 
 kernel: $(BUILDDIR)/boot/vmlinuz
 
-$(BUILDDIR)/boot/vmlinuz: $(SYSROOT)/etc/os-release $(BUILDDIR)/boot
+ifeq ($(OS_ID),fedora)
+$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/kver $(BUILDDIR)/boot
 	cp $(SYSROOT)/lib/modules/$$(cat $(BUILDDIR)/kver)/vmlinuz $@
+else # Debian-like
+$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/kver $(BUILDDIR)/boot
+	apt install -y linux-image-$$(cat $(BUILDDIR)/kver)
+	cp /boot/vmlinuz-$$(cat $(BUILDDIR)/kver) $@
+endif
 
 ### INITRAMFS ################################################################
 
@@ -86,8 +97,9 @@ $(BUILDDIR)/boot/initramfs: $(BUILDDIR)/swarm-initrd $(BUILDDIR)/boot
 $(BUILDDIR)/swarm-initrd: $(BUILDDIR)
 	make BEE_VERSION=$(BEE_VERSION) BUILDDIR=$(BUILDDIR) SYSROOT=$(SYSROOT) --directory ./initramfs swarm-initrd
 
-###### loader #######
-######### GRUB #########
+### loader ###################################################################
+######### GRUB ###############################################################
+
 ifeq ($(KERNEL_LOADER), grub)
 # Assume Fedora-style GRUB with support for Bootloader Spec files
 boot-spec: $(BUILDDIR)/boot/loader/entries/swarm.conf $(BUILDDIR)/boot/EFI/fedora/grub.cfg
@@ -109,7 +121,8 @@ loader: $(BUILDDIR)/boot/EFI/BOOT/BOOT$(SHORT_ARCH).EFI
 $(BUILDDIR)/boot/EFI/BOOT/BOOT$(SHORT_ARCH).EFI: /boot/efi/EFI $(BUILDDIR)/boot
 	cp -r $< $(BUILDDIR)/boot
 
-######### U-BOOT #########
+######### U-BOOT #############################################################
+
 else ifeq ($(KERNEL_LOADER), u-boot)
 boot-spec: $(BUILDDIR)/boot/extlinux/extlinux.conf
 
@@ -123,7 +136,45 @@ $(BUILDDIR)/boot/dtb: $(PREFIX)/boot/dtb
 	cp -r $$(readlink -f $<) -T $@
 
 loader: 
-# U-Boot doesn't need additional loader
+# U-Boot doesn't need additional loader files
+
+######### RASPI ##############################################################
+
+else ifeq ($(KERNEL_LOADER), raspi)
+boot-spec: $(BUILDDIR)/boot/config.txt $(BUILDDIR)/boot/cmdline.txt # sysconf.txt?
+
+$(BUILDDIR)/boot:
+	mkdir -p $@
+
+$(BUILDDIR)/boot/config.txt: loader/raspi/config.txt $(BUILDDIR)/boot
+	cp $< $@
+
+$(BUILDDIR)/boot/cmdline.txt: loader/raspi/cmdline.txt.j2 $(BUILDDIR)/boot
+	jinja2 -D hash=$(HASH) $< > $@
+
+dtb: $(BUILDDIR)/boot/*.dtb
+
+$(BUILDDIR)/boot/%.dtb: $(PREFIX)/%.dtb $(BUILDDIR)/boot
+	cp $< $@
+
+loader: $(BUILDDIR)/boot/bootcode.bin $(BUILDDIR)/boot/fixup*.dat $(BUILDDIR)/boot/start*.elf
+
+# Not sure what these all do or if they are all needed
+
+$(BUILDDIR)/boot/bootcode.bin: $(PREFIX)/bootcode.bin $(BUILDDIR)/boot
+	cp $< $@
+
+$(BUILDDIR)/boot/fixup%.dat: $(PREFIX)/fixup%.dat $(BUILDDIR)/boot
+	cp $< $@
+
+$(BUILDDIR)/boot/start%.elf: $(PREFIX)/start%.elf $(BUILDDIR)/boot
+	cp $< $@
+
+##############################################################################
+
+else
+$(error Please set KERNEL_LOADER to either "grub" or "u-boot")
+endif
 else
 $(error Please set KERNEL_LOADER to either "grub" or "u-boot")
 endif

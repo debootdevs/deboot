@@ -1,4 +1,5 @@
 #!/bin/bash
+# Makes a copy of $1 to $2, then maps and symlinks the first partition to $3
 
 SOURCE=${1-/dev/mmcblk0}
 BOOT_IMG=$2
