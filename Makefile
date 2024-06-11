@@ -17,11 +17,10 @@ endif
 
 OS_ID = $(shell (. /etc/os-release && echo $ID))
 
-PREFIX ?= /mnt/sysroot # optionally mount template image here
-KVERSION ?= $(shell find $(PREFIX)/lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit) # SHOULD NOT BE USED
-KERNEL ?= $(PREFIX)/boot/vmlinuz-$(KVERSION) # NOT USED
+BOOTFS_TEMPLATE ?= /mnt/bootfs# optionally mount template image here
 NAME ?= Swarm Linux
 KERNEL_LOADER ?= grub
+KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 
 .PHONY: extlinux grub install install-grub clean initramfs boot-tree
 
@@ -33,11 +32,8 @@ env.json: Containerfile
 	podman build . -t deboot-build
 	podman image inspect deboot-build > $@
 
-#init-env: env.json
-#	podman run --rm -v ./:/deboot -v $(PREFIX)/boot:/boot:ro -v $(PREFIX)/lib/modules:/lib/modules:ro -ti deboot-build bash
-
 init-env: env.json
-	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -v $(PREFIX) -ti deboot-build bash
+	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -v $(BOOTFS_TEMPLATE):/bootfs:ro -ti deboot-build bash
 
 rm-env:
 	-podman rmi deboot-build
@@ -62,13 +58,10 @@ $(BUILDDIR)/boot/LiveOS/squashfs.img: $(BUILDDIR)/squashfs.img
 	mkdir -p $(BUILDDIR)/boot/LiveOS
 	cp $< $@
 
-$(BUILDDIR)/kver: $(SYSROOT)/etc/os-release $(BUILDDIR) /lib/modules
-	find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit > $@
-
 
 ### BOOT-TREE ################################################################
 
-boot-tree: $(BUILDDIR)/kver $(BUILDDIR)/boot appliance kernel initramfs loader boot-spec dtb
+boot-tree: $(BUILDDIR)/boot appliance kernel initramfs loader boot-spec dtb
 #	make BUILDDIR=$(BUILDDIR) KERNEL_LOADER=$(KERNEL_LOADER) --directory loader boot-tree
 
 $(BUILDDIR)/boot: $(BUILDDIR)
@@ -79,12 +72,11 @@ $(BUILDDIR)/boot: $(BUILDDIR)
 kernel: $(BUILDDIR)/boot/vmlinuz
 
 ifeq ($(OS_ID),fedora)
-$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/kver $(BUILDDIR)/boot
-	cp $(SYSROOT)/lib/modules/$$(cat $(BUILDDIR)/kver)/vmlinuz $@
+$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/boot
+	cp $(SYSROOT)/lib/modules/$(KVERSION)/vmlinuz $@
 else # Debian-like
-$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/kver $(BUILDDIR)/boot
-	apt install -y linux-image-$$(cat $(BUILDDIR)/kver)
-	cp /boot/vmlinuz-$$(cat $(BUILDDIR)/kver) $@
+$(BUILDDIR)/boot/vmlinuz: $(BUILDDIR)/boot
+	cp /boot/vmlinuz-$(KVERSION) $@
 endif
 
 ### INITRAMFS ################################################################
@@ -132,7 +124,7 @@ $(BUILDDIR)/boot/extlinux/extlinux.conf:
 
 dtb: $(BUILDDIR)/boot/dtb
 
-$(BUILDDIR)/boot/dtb: $(PREFIX)/boot/dtb
+$(BUILDDIR)/boot/dtb: /bootfs/dtb
 	cp -r $$(readlink -f $<) -T $@
 
 loader: 
@@ -143,7 +135,7 @@ loader:
 else ifeq ($(KERNEL_LOADER), raspi)
 boot-spec: $(BUILDDIR)/boot/config.txt $(BUILDDIR)/boot/cmdline.txt # sysconf.txt?
 
-$(BUILDDIR)/boot:
+$(BUILDDIR)/boot: # target -> boot partition
 	mkdir -p $@
 
 $(BUILDDIR)/boot/config.txt: loader/raspi/config.txt $(BUILDDIR)/boot
@@ -152,29 +144,20 @@ $(BUILDDIR)/boot/config.txt: loader/raspi/config.txt $(BUILDDIR)/boot
 $(BUILDDIR)/boot/cmdline.txt: loader/raspi/cmdline.txt.j2 $(BUILDDIR)/boot
 	jinja2 -D hash=$(HASH) $< > $@
 
-dtb: $(BUILDDIR)/boot/*.dtb
+dtb: $(BUILDDIR)/boot/bootcode.bin
 
-$(BUILDDIR)/boot/%.dtb: $(PREFIX)/%.dtb $(BUILDDIR)/boot
-	cp $< $@
-
-loader: $(BUILDDIR)/boot/bootcode.bin $(BUILDDIR)/boot/fixup*.dat $(BUILDDIR)/boot/start*.elf
+loader: $(BUILDDIR)/boot/bootcode.bin
 
 # Not sure what these all do or if they are all needed
 
-$(BUILDDIR)/boot/bootcode.bin: $(PREFIX)/bootcode.bin $(BUILDDIR)/boot
-	cp $< $@
-
-$(BUILDDIR)/boot/fixup%.dat: $(PREFIX)/fixup%.dat $(BUILDDIR)/boot
-	cp $< $@
-
-$(BUILDDIR)/boot/start%.elf: $(PREFIX)/start%.elf $(BUILDDIR)/boot
-	cp $< $@
+$(BUILDDIR)/boot/bootcode.bin: /bootfs/bootcode.bin $(BUILDDIR)/boot
+	cp /bootfs/*.elf $(@D)
+	cp /bootfs/*.dat $(@D)
+	cp /bootfs/*.dtb $(@D)
+	cp /bootfs/bootcode.bin $@
 
 ##############################################################################
 
-else
-$(error Please set KERNEL_LOADER to either "grub" or "u-boot")
-endif
 else
 $(error Please set KERNEL_LOADER to either "grub" or "u-boot")
 endif
@@ -189,7 +172,7 @@ install: $(BUILDDIR)/boot.part boot-tree
 	umount $(TMP)
 	rmdir $(TMP)
 
-ifeq ($(KERNEL_LOADER), u-boot)
+ifneq ($(KERNEL_LOADER),grub)
 $(BUILDDIR)/boot.part: 
 	loader/cp-image.sh $(BOOT_DEV) $(BUILDDIR)/boot.img $@
 else

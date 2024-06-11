@@ -11,11 +11,10 @@
     </profiles>
     <preferences>
         <version>1.0.0</version>
-        <packagemanager>dnf</packagemanager>
+        <packagemanager>apt</packagemanager>
         <locale>en_US</locale>
         <keytable>us</keytable>
         <timezone>UTC</timezone>
-        <rpm-check-signatures>false</rpm-check-signatures>
     </preferences>
     <preferences profiles="Live">
         <type image="kis" filesystem="squashfs"/>
@@ -23,35 +22,25 @@
     <users>
         <user password="$6$KYB00jA.jgaG6g7q$h59VHRQbwk9vnHzwyu53ZEUfUVKf.Veljn269vnVxCcqFCuOytvuA/Ys20puoOrbWACSmc5mLvjr9yztrcKmP." home="/root" name="root" groups="root"/>
     </users>
-    <repository type="rpm-md" alias="Fedora39" sourcetype="metalink">
-	<source path="https://mirrors.fedoraproject.org/metalink?repo=fedora-39&amp;arch={{arch}}"/>
-    </repository>
-    <repository type="rpm-md" alias="ethersphere" imageinclude="true">
-	<source path="https://repos.ethswarm.org/rpm"/>
-    </repository>
-    <repository type="rpm-md" alias="Fedora39-updates" sourcetype="metalink">
-	<source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f39&amp;arch={{arch}}"/>
+    <repository type="apt-deb" distribution="bookworm" repository_gpgcheck="false">
+	<source path="http://deb.debian.org/debian"/>
     </repository>
     <packages type="image">
-        <package name="kernel"/>
-        <package name="selinux-policy-targeted"/>
-        <package name="iproute"/>
-        <package name="iputils"/>
+        <package name="net-tools"/>
+        <package name="iproute2"/>
+        <package name="iputils-ping"/>
         <package name="systemd"/>
-        <package name="systemd-networkd"/>
         <package name="systemd-resolved"/>
         <package name="neovim"/>
         <package name="tzdata"/>
         <package name="squashfs-tools"/>
         <package name="tar"/>
-        <package name="dhclient"/>
+        <package name="isc-dhcp-client"/>
         <package name="podman"/>
         <package name="fuse-overlayfs"/>
     </packages>
     <packages type="bootstrap">
-        <package name="glibc-minimal-langpack"/>
-        <package name="glibc-langpack-en"/>
-        <package name="filesystem"/>
-        <package name="basesystem"/>
+        <package name="apt"/>
+        <package name="locales"/>
     </packages>
 </image>

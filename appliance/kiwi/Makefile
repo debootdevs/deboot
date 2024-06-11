@@ -8,7 +8,7 @@ $(error Could not find kiwi. Please set Make variable KIWI to path to kiwi binar
 endif
 
 $(SYSROOT)/etc/os-release: config.xml config.sh root
-	$(KIWI) --profile Live system prepare --description . --root $(SYSROOT) && touch -h $@
+	$(KIWI) --debug --logfile=put.log --profile Live system prepare --description . --root $(SYSROOT) && touch -h $@
 
 config.xml: config.xml.j2
 	jinja2 -D arch=$$(uname -m) $< > $@
