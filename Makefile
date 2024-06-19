@@ -17,7 +17,7 @@ endif
 
 OS_ID = $(shell (. /etc/os-release && echo $ID))
 
-BOOTFS_TEMPLATE ?= /mnt/bootfs# optionally mount template image here
+BOOT_TEMPLATE ?= template.img
 NAME ?= Swarm Linux
 KERNEL_LOADER ?= grub
 KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
@@ -33,7 +33,7 @@ env.json: Containerfile
 	podman image inspect deboot-build > $@
 
 init-env: env.json
-	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -v $(BOOTFS_TEMPLATE):/bootfs:ro -ti deboot-build bash
+	podman run --privileged --rm -v ./:/deboot -v /dev:/dev -ti deboot-build bash
 
 rm-env:
 	-podman rmi deboot-build
@@ -122,11 +122,15 @@ $(BUILDDIR)/boot/extlinux/extlinux.conf:
 	mkdir -p $(@D)
 	jinja2 -D name="$(NAME)" -D kernel=$(KVERSION) -D hash=$(HASH) loader/u-boot/extlinux.conf.j2 > $@
 
-dtb: $(BUILDDIR)/boot/dtb
 
-$(BUILDDIR)/boot/dtb: /bootfs/dtb
-	cp -r $$(readlink -f $<) -T $@
 
+### junk
+#dtb: $(BUILDDIR)/boot/dtb
+
+#$(BUILDDIR)/boot/dtb: /bootfs/dtb
+#	cp -r $$(readlink -f $<) -T $@
+
+dtb:
 loader: 
 # U-Boot doesn't need additional loader files
 
@@ -144,17 +148,22 @@ $(BUILDDIR)/boot/config.txt: loader/raspi/config.txt $(BUILDDIR)/boot
 $(BUILDDIR)/boot/cmdline.txt: loader/raspi/cmdline.txt.j2 $(BUILDDIR)/boot
 	jinja2 -D hash=$(HASH) $< > $@
 
-dtb: $(BUILDDIR)/boot/bootcode.bin
+dtb:
+loader:
 
-loader: $(BUILDDIR)/boot/bootcode.bin
+
+### junk
+#dtb: $(BUILDDIR)/boot/bootcode.bin
+
+#loader: $(BUILDDIR)/boot/bootcode.bin
 
 # Not sure what these all do or if they are all needed
 
-$(BUILDDIR)/boot/bootcode.bin: /bootfs/bootcode.bin $(BUILDDIR)/boot
-	cp /bootfs/*.elf $(@D)
-	cp /bootfs/*.dat $(@D)
-	cp /bootfs/*.dtb $(@D)
-	cp /bootfs/bootcode.bin $@
+#$(BUILDDIR)/boot/bootcode.bin: /bootfs/bootcode.bin $(BUILDDIR)/boot
+#	cp /bootfs/*.elf $(@D)
+#	cp /bootfs/*.dat $(@D)
+#	cp /bootfs/*.dtb $(@D)
+#	cp /bootfs/bootcode.bin $@
 
 ##############################################################################
 
@@ -167,14 +176,25 @@ endif
 install: $(BUILDDIR)/boot.part boot-tree
 	$(eval TMP := $(shell mktemp -d))
 	mount $< $(TMP)
-	rm -rf $(TMP)/*
-	cp -r $(BUILDDIR)/boot -T $(TMP)
+#	rm -rf $(TMP)/*
+	cp -r $(BUILDDIR)/boot/* $(TMP)
 	umount $(TMP)
 	rmdir $(TMP)
 
 ifneq ($(KERNEL_LOADER),grub)
-$(BUILDDIR)/boot.part: 
-	loader/cp-image.sh $(BOOT_DEV) $(BUILDDIR)/boot.img $@
+#$(BUILDDIR)/boot.part: 
+#	loader/cp-image.sh $(BOOT_DEV) $(BUILDDIR)/boot.img $@
+
+$(BUILDDIR)/boot.part: $(BUILDDIR)/lo
+	partx -a $$(cat $<) # creates in /dev rather than /dev/mapper
+	ln -s $$(cat $<)p1 $@
+
+$(BUILDDIR)/lo: $(BUILDDIR)/boot.img
+	losetup -f $< --show > $@
+
+$(BUILDDIR)/boot.img: $(BUILDDIR)
+	dd if=$(BOOT_TEMPLATE) of=$@
+
 else
 # Create loopback device backed on boot.img, devnode for p1, symlink to devnode
 $(BUILDDIR)/boot.part: | $(BUILDDIR)/boot.img
@@ -187,6 +207,7 @@ endif
 
 clean:
 	-rm appliance/kiwi/config.xml
+	-losetup -d $$(cat $(BUILDDIR)/lo) && rm $(BUILDDIR)/lo
 	-rm -rf $(BUILDDIR)/*
 
 ### DOCS #######################################################

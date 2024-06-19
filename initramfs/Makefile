@@ -1,7 +1,11 @@
 KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 ARCH = $(shell uname -m)
-ifeq ($(ARCH),x86_64) # for bee .deb installations
+
+# if OS == deb
+ifeq ($(ARCH),x86_64)
 ARCH = amd64
+else ifeq ($(ARCH),aarch64)
+ARCH = arm64
 endif
 
 
