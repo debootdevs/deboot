@@ -29,7 +29,7 @@ KVERSION = $(shell find /lib/modules -mindepth 1 -maxdepth 1 -printf "%f" -quit)
 build-env: env.json
 
 env.json: Containerfile
-	podman build . -t deboot-build
+	podman build . -t deboot-build --target debian-$$(uname -m)
 	podman image inspect deboot-build > $@
 
 init-env: env.json
