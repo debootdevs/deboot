@@ -23,4 +23,3 @@ baseInsertService podman-bee
 #--------------------------------------
 baseSetRunlevel 3
 
-locale-gen "en_US.UTF-8"
