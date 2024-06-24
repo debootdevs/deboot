@@ -3,7 +3,7 @@ BUILDDIR = $(abspath ./build)
 CONTAINER_OPTS = -v $(realpath .):/deboot -ti --rm --cap-add=SYS_PTRACE
 CONTAINER_IMAGE = ghcr.io/debootdevs/fedora
 CONTAINER_RELEASE = "sha256:8e9a3947a835eab7047364ec74084fc63f9d016333b4cd9fcd8a8a8ae3afd0fd"
-BEE_VERSION ?= 1.18.2
+BEE_VERSION ?= 2.1.0
 
 ARCH = $(shell uname -m)
 ifeq ($(ARCH), aarch64)
