@@ -192,8 +192,8 @@ $(BUILDDIR)/boot.part: $(BUILDDIR)/lo
 $(BUILDDIR)/lo: $(BUILDDIR)/boot.img
 	losetup -f $< --show > $@
 
-$(BUILDDIR)/boot.img: $(BUILDDIR)
-	dd if=$(BOOT_TEMPLATE) of=$@
+$(BUILDDIR)/boot.img: $(BOOT_TEMPLATE) | $(BUILDDIR)
+	dd if=$< of=$@
 
 else
 # Create loopback device backed on boot.img, devnode for p1, symlink to devnode
