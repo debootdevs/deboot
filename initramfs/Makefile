@@ -20,7 +20,7 @@ swarm-initrd: $(BUILDDIR)/swarm-initrd
 
 $(BUILDDIR)/swarm-initrd: /usr/bin/bee $(dracutbasedir)/dracut-util
 	$(dracutbasedir)/dracut.sh -l \
-		-a "bzz network-legacy drm" \
+		-a "bzz systemd-network-management drm" \
 		-o iscsi \
 		--no-hostonly --no-hostonly-cmdline \
 		-f $@ $(KVERSION)
