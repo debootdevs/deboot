@@ -2,6 +2,20 @@
 
 DeBoot is a project to research and implement techniques for booting OS images from decentralized storage networks, such as [Swarm](https://ethswarm.org) or [IPFS](https://ipfs.tech/).
 
+## Quickstart
+
+You'll need to obtain a bootable Raspberry Pi image to use as a template for the DeBoot build. We've tested this with the Debian RPi images (https://raspi.debian.net/tested-images/). Put the image file in the repo root directory and rename it to `template.img`. You may want to strip out unnecessary data from the image: we'll only use the data up to the end of the first partition, so you can remove the root partition using `fdisk` and `truncate` the image for faster writing to an SD card.
+
+Now, make sure you have Podman installed and working, then run:
+
+```sh
+make init-env # enter build container
+cd /deboot
+make KERNEL_LOADER=raspi HASH=$SWARM_HASH install
+```
+
+to build the image.
+
 ## Documentation
 
 Read all about the current technique in [the DeBoot documentation pages](https://debootdevs.github.io/deboot/).
