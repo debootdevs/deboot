@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://debootdevs.github.io/deboot/inspect/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Inspecting boot images - DeBoot</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Inspecting boot images";
+        var mkdocs_page_input_path = "inspect.md";
+        var mkdocs_page_url = "/deboot/inspect/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> DeBoot
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../booting/">How booting works</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../deboot/">How DeBoot works</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Boot Stages</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../metal/">Metal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../uefi/">UEFI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../grub/">GRUB</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../u-boot/">U-Boot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../initramfs/">Initramfs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Using DeBoot</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Building DeBoot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../debooting/">DeBooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../appliance/">Appliances</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gotcha/">Gotchas</a>
+                  </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Inspecting boot images</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#the-raw-disk">The raw disk</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#inside-the-partitions">Inside the partitions</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">DeBoot</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Inspecting boot images</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="inspecting-a-raw-disk-image">Inspecting a raw disk image</h1>
+<p>To adapt a new device or OS to the DeBoot style boot process, it usually helps to inspect how existing OS distributions on that device do it. Apart from reading documentation, it's useful to download an official raw disk image and inspect it. This page discusses some methods to do that.</p>
+<h2 id="the-raw-disk">The raw disk</h2>
+<p>Typically, bootable images are distributed as a raw image of a partitioned disk. This can take the form of a "standard" disk which is intended to be stored on a writable medium and used persistently, or a special hybrid ISO 9660 format which can also be written to an optical disk and used as an installer.</p>
+<ul>
+<li>Two mode boot extension for ISO 9660. https://en.wikipedia.org/wiki/ISO_9660#El_Torito</li>
+</ul>
+<p>Generally, the <code>fdisk</code> program is used to inspect the partition tables of raw disk images, showing whether they are in MBR or GPT format and listing the partitions.</p>
+<pre><code>fdisk -l image.img
+</code></pre>
+<p>Typically, the last partition is the root filesystem and the earlier partitions (and sometimes some code located in the space before the first partition) are used for booting. Sometimes, the first partition is VFAT formatted and has an "EFI" partition code. In this case, UEFI firmware can discover it and launch EFI applications.</p>
+<p>Once you have seen the layout of the disk, it's time to look inside the partitions. You can create devnodes for these partitions with the following command, which will list out the names of the devnodes: typically <code>/dev/mapper/loop${x}p${y}</code> where $y$ is the partition number and $x$ is a counter that keeps track of which loopback device you've used to do this.</p>
+<pre><code>kpartx -va image.img
+</code></pre>
+<p>This command may need to be run as <code>sudo</code>. If <code>kpartx</code>  is not available, its functionality can be replicated with <code>losetup</code> and <code>partx</code>.</p>
+<h2 id="inside-the-partitions">Inside the partitions</h2>
+<p>The first step is to mount and inspect the EFI system partition (ESP), if present. This can be used to figure out whether GRUB, U-Boot, or some other system is being used to boot the OS. If the image has an MBR instead of GPT, the first partition might have some other partition code like "Microsoft Basic Data."</p>
+<p>Some tips on identifying the boot system in use:</p>
+<ul>
+<li>If the ESP is present and has a file with path <code>/EFI/BOOT/BOOT${ARCH}.EFI</code>, it can be booted by UEFI firmware.</li>
+<li>If GRUB is present, there is usually a file <code>grub${arch}.efi</code> somewhere in the <code>/EFI</code> directory. In this case, <code>grub.cfg</code> may be located in the ESP or in the second partition.</li>
+<li>EFI applications can sometimes be booted by boot code supporting a strict subset of UEFI, such as U-Boot or the Raspberry Pi bootloader (which implements EBBR).</li>
+<li>For non-GRUB boot sequences on ARM boards, consult the board's documentation for bootloader configuration. Configuration files are often text based and located in the first partition.</li>
+<li>On U-Boot systems, look for a file <code>extlinux.conf</code>.</li>
+<li>On RPi, look for <code>/config.txt</code> and <code>/cmdline.txt</code>.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../gotcha/" class="btn btn-neutral float-left" title="Gotchas"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../gotcha/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

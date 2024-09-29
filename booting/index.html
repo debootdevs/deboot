@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://debootdevs.github.io/deboot/booting/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>How booting works - DeBoot</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "How booting works";
+        var mkdocs_page_input_path = "booting.md";
+        var mkdocs_page_url = "/deboot/booting/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> DeBoot
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">How booting works</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#some-boot-sequences">Some boot sequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#booting-linux">Booting Linux</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#userspace">Userspace</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../deboot/">How DeBoot works</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Boot Stages</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../metal/">Metal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../uefi/">UEFI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../grub/">GRUB</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../u-boot/">U-Boot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../initramfs/">Initramfs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Using DeBoot</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../build/">Building DeBoot</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../debooting/">DeBooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../appliance/">Appliances</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../gotcha/">Gotchas</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../inspect/">Inspecting boot images</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">DeBoot</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">How booting works</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="how-booting-works">How booting works</h1>
+<p>Booting a computer — that is, executing code on a computer starting from a completely uninitialized, powered off state — usually traverses several stages before reaching its stable state of running operating system software. 
+The job of each boot stage is to retrieve the program to execute in the next stage from wherever it is being stored, load it into memory, and execute it.
+Different boot stages are distinguished by their resource footprint, user interface, the types of storage locations from which they can retrieve data, and the executable image formats they are able to load.
+Generally, boot stages are designed to be <em>ephemeral</em> in the sense that they leave as little as possible behind in memory when the next stage is running.</p>
+<h2 id="some-boot-sequences">Some boot sequences</h2>
+<ul>
+<li>UEFI boot flow summary. https://github.com/tianocore/tianocore.github.io/wiki/PI-Boot-Flow</li>
+<li>Rock5b with U-Boot, a recently popular ARM SOC. https://opensource.rock-chips.com/wiki_Boot_option</li>
+</ul>
+<h2 id="booting-linux">Booting Linux</h2>
+<p>The DeBoot POC is focussed on the task of booting Linux. Linux is usually distributed in a special gzip-compressed ELF executable format called a [b]zImage with the filename <code>vmlinuz</code>. There are various programs that can load this format; the most widely used are GRUB (for x86 systems) and U-Boot (for ARM systems). Linux can also be bundled into an EFI executable using the <a href="https://docs.kernel.org/admin-guide/efi-stub.html">EFI boot stub</a> format to be loaded by UEFI (or <a href="https://arm-software.github.io/ebbr/">EBBR</a>) firmware.</p>
+<h2 id="userspace">Userspace</h2>
+<p>The final stage of a Linux boot comprises mounting and switching to the OS root filesystem, or <em>userspace</em>. In <a href="https://systemd.io/INITRD_INTERFACE/">systemd-based initramfs</a>, the switch uses the <code>systemctl switch-root</code> command.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../overview/" class="btn btn-neutral float-left" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../deboot/" class="btn btn-neutral float-right" title="How DeBoot works">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../overview/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../deboot/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
