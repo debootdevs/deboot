@@ -1,6 +1,4 @@
 # config: /etc/bee/bee.yaml
 data-dir: /var/lib/bee
-debug-api-addr: 127.0.0.1:1635
-debug-api-enable: true
 password-file: ""
 blockchain-rpc-endpoint: https://rpc.gnosischain.com
