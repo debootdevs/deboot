@@ -10,6 +10,6 @@ BOOT_IMG=$1
 
 # main thread
 # fallocate -l 255m $BOOT_IMG # not supported in WSL
-dd if=/dev/zero of=$BOOT_IMG bs=1M count=512
-echo -e 'label: gpt\n,511M,U' | sfdisk $BOOT_IMG
+dd if=/dev/zero of=$BOOT_IMG bs=1M count=8096
+echo -e 'label: gpt\n,8095M,U' | sfdisk $BOOT_IMG
 #sgdisk --new=1:0:0 -t 1:ef00 $BOOT_IMG
