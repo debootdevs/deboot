@@ -19,6 +19,8 @@ baseInsertService systemd-resolved
 baseInsertService podman-bee
 
 #======================================
-# Setup default target, multi-user
+# Setup default target, graphical
+# multi-user system with network 
+# services
 #--------------------------------------
-baseSetRunlevel 3
+baseSetRunlevel 5
