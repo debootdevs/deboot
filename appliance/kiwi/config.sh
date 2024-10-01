@@ -17,6 +17,7 @@ baseInsertService dbus-broker
 baseInsertService systemd-networkd
 baseInsertService systemd-resolved
 baseInsertService podman-bee
+baseInsertService gdm
 
 #======================================
 # Setup default target, graphical
